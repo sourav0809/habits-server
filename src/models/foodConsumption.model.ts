@@ -7,8 +7,10 @@ import mongoose, { Document, Schema } from "mongoose";
  */
 export interface IFoodConsumption extends Document {
   _id: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   userActivityId: mongoose.Types.ObjectId;
   userFoodId: mongoose.Types.ObjectId;
+  date: Date;
   quantity: number;
   totalCalories: number;
   deletedAt: Date | null;
@@ -19,6 +21,12 @@ export interface IFoodConsumption extends Document {
 
 const foodConsumptionSchema = new Schema<IFoodConsumption>(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
     userActivityId: {
       type: Schema.Types.ObjectId,
       ref: "UserActivity",
@@ -28,6 +36,11 @@ const foodConsumptionSchema = new Schema<IFoodConsumption>(
     userFoodId: {
       type: Schema.Types.ObjectId,
       ref: "UserFood",
+      required: true,
+      index: true,
+    },
+    date: {
+      type: Date,
       required: true,
       index: true,
     },
@@ -64,6 +77,7 @@ const foodConsumptionSchema = new Schema<IFoodConsumption>(
   }
 );
 
+foodConsumptionSchema.index({ userId: 1, date: 1, deletedAt: 1, isDeleted: 1 });
 foodConsumptionSchema.index({ userActivityId: 1, deletedAt: 1, isDeleted: 1 });
 foodConsumptionSchema.index({ userFoodId: 1, deletedAt: 1, isDeleted: 1 });
 

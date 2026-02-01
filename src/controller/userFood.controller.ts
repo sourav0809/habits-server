@@ -59,8 +59,8 @@ const deleteFood = catchAsync(async (req: Request, res: Response) => {
   const user = (req as AuthenticatedRequest).user;
   const id = req.params.id as string;
 
-  const isUsedInMeals = await foodConsumptionService.findOne({ userFoodId: id });
-  if (isUsedInMeals) {
+  const count = await foodConsumptionService.count({ userId: user.id, userFoodId: id });
+  if (count > 0) {
     throw new ApiError(httpStatus.BAD_REQUEST, ERROR_MESSAGES.FOOD.USED_IN_MEALS);
   }
 

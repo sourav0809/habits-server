@@ -12,6 +12,11 @@ const ERROR_MESSAGES = {
     DELETE_FAILED: "Failed to delete food",
     USED_IN_MEALS: "Cannot delete food that is already used in meals",
   },
+  FOOD_CONSUMPTION: {
+    NOT_FOUND: "Food consumption not found",
+    CREATE_FAILED: "Failed to add food consumption",
+    DELETE_FAILED: "Failed to delete food consumption",
+  },
 };
 
 export default ERROR_MESSAGES;
