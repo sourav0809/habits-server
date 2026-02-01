@@ -7,5 +7,7 @@ export const SUCCESS_MESSAGES = {
   FOOD: {
     LIST_SUCCESS: "Foods fetched successfully",
     ADD_SUCCESS: "Food added successfully",
+    UPDATE_SUCCESS: "Food updated successfully",
+    DELETE_SUCCESS: "Food deleted successfully",
   },
 };

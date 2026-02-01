@@ -9,6 +9,7 @@ export interface IWaterIntake extends Document {
   userActivityId: mongoose.Types.ObjectId;
   amountMl: number;
   deletedAt: Date | null;
+  isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -30,6 +31,10 @@ const waterIntakeSchema = new Schema<IWaterIntake>(
       type: Date,
       default: null,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -45,7 +50,7 @@ const waterIntakeSchema = new Schema<IWaterIntake>(
   }
 );
 
-waterIntakeSchema.index({ userActivityId: 1, deletedAt: 1 });
+waterIntakeSchema.index({ userActivityId: 1, deletedAt: 1, isDeleted: 1 });
 
 const WaterIntakeModel = mongoose.model<IWaterIntake>("WaterIntake", waterIntakeSchema);
 

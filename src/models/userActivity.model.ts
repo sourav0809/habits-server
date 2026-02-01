@@ -11,6 +11,7 @@ export interface IUserActivity extends Document {
   totalCalories: number;
   totalWaterMl: number;
   deletedAt: Date | null;
+  isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,6 +42,10 @@ const userActivitySchema = new Schema<IUserActivity>(
       type: Date,
       default: null,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -56,8 +61,8 @@ const userActivitySchema = new Schema<IUserActivity>(
   }
 );
 
-userActivitySchema.index({ userId: 1, deletedAt: 1 });
-userActivitySchema.index({ userId: 1, date: 1, deletedAt: 1 });
+userActivitySchema.index({ userId: 1, deletedAt: 1, isDeleted: 1 });
+userActivitySchema.index({ userId: 1, date: 1, deletedAt: 1, isDeleted: 1 });
 
 const UserActivityModel = mongoose.model<IUserActivity>("UserActivity", userActivitySchema);
 

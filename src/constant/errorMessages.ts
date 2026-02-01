@@ -7,6 +7,9 @@ const ERROR_MESSAGES = {
   },
   FOOD: {
     CREATE_FAILED: "Failed to add food",
+    NOT_FOUND: "Food not found",
+    UPDATE_FAILED: "Failed to update food",
+    DELETE_FAILED: "Failed to delete food",
   },
 };
 

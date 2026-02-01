@@ -11,6 +11,7 @@ export interface IUserFood extends Document {
   caloriesPerGram: number;
   defaultQuantity: number;
   deletedAt: Date | null;
+  isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,6 +23,15 @@ export interface CreateUserFoodInput {
   name: string;
   caloriesPerGram: number;
   defaultQuantity: number;
+}
+
+/**
+ * Input for updating a user food (service layer). All fields optional.
+ */
+export interface UpdateUserFoodInput {
+  name?: string;
+  caloriesPerGram?: number;
+  defaultQuantity?: number;
 }
 
 const userFoodSchema = new Schema<IUserFood>(
@@ -51,6 +61,10 @@ const userFoodSchema = new Schema<IUserFood>(
       type: Date,
       default: null,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -66,7 +80,7 @@ const userFoodSchema = new Schema<IUserFood>(
   }
 );
 
-userFoodSchema.index({ userId: 1, deletedAt: 1 });
+userFoodSchema.index({ userId: 1, deletedAt: 1, isDeleted: 1 });
 
 const UserFoodModel = mongoose.model<IUserFood>("UserFood", userFoodSchema);
 

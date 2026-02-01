@@ -13,6 +13,7 @@ export interface IUser extends Document {
   password: string;
   status: (typeof USER_STATUS)[keyof typeof USER_STATUS];
   deletedAt: Date | null;
+  isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -67,6 +68,10 @@ const userSchema = new Schema<IUser>(
       type: Date,
       default: null,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -82,8 +87,8 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-userSchema.index({ status: 1, deletedAt: 1 });
-userSchema.index({ email: 1, status: 1, deletedAt: 1 });
+userSchema.index({ status: 1, deletedAt: 1, isDeleted: 1 });
+userSchema.index({ email: 1, status: 1, deletedAt: 1, isDeleted: 1 });
 
 const UserModel = mongoose.model<IUser>("User", userSchema);
 

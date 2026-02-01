@@ -32,11 +32,14 @@ class UserService {
   }
 
   /**
-   * Delete a user by id (hard delete).
+   * Soft delete a user by id. Sets deletedAt and isDeleted.
    */
   async delete(id: string): Promise<void> {
-    const result = await UserModel.updateOne({ _id: id }, { $set: { deletedAt: new Date() } });
-    if (result.modifiedCount === 0) {
+    const result = await UserModel.updateOne(
+      { _id: id, deletedAt: null, isDeleted: false },
+      { $set: { deletedAt: new Date(), isDeleted: true } }
+    );
+    if (result.matchedCount === 0) {
       throw new ApiError(404, "User not found");
     }
   }
@@ -60,6 +63,7 @@ class UserService {
       ...filter,
       status: USER_STATUS.ACTIVE,
       deletedAt: null,
+      isDeleted: false,
     };
 
     const [users, total] = await Promise.all([
@@ -91,6 +95,7 @@ class UserService {
     const filter: Record<string, unknown> = {
       status: USER_STATUS.ACTIVE,
       deletedAt: null,
+      isDeleted: false,
     };
     if (where.id) filter._id = where.id;
     if (where.email) filter.email = where.email;
@@ -111,6 +116,7 @@ class UserService {
       ...condition,
       status: USER_STATUS.ACTIVE,
       deletedAt: null,
+      isDeleted: false,
     };
     const user = await UserModel.findOne(filter).select("+password").exec();
     return user ?? null;
@@ -122,7 +128,7 @@ class UserService {
   async update(id: string, data: UpdateUserInput): Promise<IUser> {
     try {
       const user = await UserModel.findOneAndUpdate(
-        { _id: id, status: USER_STATUS.ACTIVE, deletedAt: null },
+        { _id: id, status: USER_STATUS.ACTIVE, deletedAt: null, isDeleted: false },
         { $set: data },
         { new: true, runValidators: true }
       )

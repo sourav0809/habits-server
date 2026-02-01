@@ -11,6 +11,7 @@ export interface IFoodIntake extends Document {
   quantity: number;
   totalCalories: number;
   deletedAt: Date | null;
+  isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -43,6 +44,10 @@ const foodIntakeSchema = new Schema<IFoodIntake>(
       type: Date,
       default: null,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -58,8 +63,8 @@ const foodIntakeSchema = new Schema<IFoodIntake>(
   }
 );
 
-foodIntakeSchema.index({ userActivityId: 1, deletedAt: 1 });
-foodIntakeSchema.index({ userFoodId: 1, deletedAt: 1 });
+foodIntakeSchema.index({ userActivityId: 1, deletedAt: 1, isDeleted: 1 });
+foodIntakeSchema.index({ userFoodId: 1, deletedAt: 1, isDeleted: 1 });
 
 const FoodIntakeModel = mongoose.model<IFoodIntake>("FoodIntake", foodIntakeSchema);
 

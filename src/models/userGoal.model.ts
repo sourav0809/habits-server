@@ -10,6 +10,7 @@ export interface IUserGoal extends Document {
   type: string;
   targetValue: number;
   deletedAt: Date | null;
+  isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,6 +37,10 @@ const userGoalSchema = new Schema<IUserGoal>(
       type: Date,
       default: null,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -51,8 +56,8 @@ const userGoalSchema = new Schema<IUserGoal>(
   }
 );
 
-userGoalSchema.index({ userId: 1, deletedAt: 1 });
-userGoalSchema.index({ userId: 1, type: 1, deletedAt: 1 });
+userGoalSchema.index({ userId: 1, deletedAt: 1, isDeleted: 1 });
+userGoalSchema.index({ userId: 1, type: 1, deletedAt: 1, isDeleted: 1 });
 
 const UserGoalModel = mongoose.model<IUserGoal>("UserGoal", userGoalSchema);
 
