@@ -6,26 +6,19 @@ import { USER_STATUS } from "@/constant";
 /**
  * User Service
  * Handles all CRUD operations for User with MongoDB/Mongoose.
+ * Returns Mongoose documents; model toJSON handles id / _id for API responses.
  */
 class UserService {
   /**
    * Create a new user.
    */
-  async create(data: CreateUserInput): Promise<{
-    id: string;
-    email: string;
-    name: string;
-  }> {
+  async create(data: CreateUserInput): Promise<IUser> {
     try {
       const user = await UserModel.create({
         ...data,
         status: USER_STATUS.ACTIVE,
       });
-      return {
-        id: user._id.toString(),
-        email: user.email,
-        name: user.name
-      };
+      return user;
     } catch (error: unknown) {
       const err = error as { code?: number };
       if (err.code === 11000) {
@@ -42,12 +35,8 @@ class UserService {
    * Delete a user by id (hard delete).
    */
   async delete(id: string): Promise<void> {
-    const result = await UserModel.deleteOne({
-      _id: id,
-      status: USER_STATUS.ACTIVE,
-      deletedAt: null,
-    });
-    if (result.deletedCount === 0) {
+    const result = await UserModel.updateOne({ _id: id }, { $set: { deletedAt: new Date() } });
+    if (result.modifiedCount === 0) {
       throw new ApiError(404, "User not found");
     }
   }
@@ -60,7 +49,7 @@ class UserService {
     page: number = 0,
     size: number = 10
   ): Promise<{
-    data: Array<{ id: string; email: string; name: string }>;
+    data: IUser[];
     pagination: { hasMore: boolean; page: number; size: number; total: number };
   }> {
     const safePage = Number.isFinite(page) && page >= 0 ? page : 0;
@@ -75,11 +64,10 @@ class UserService {
 
     const [users, total] = await Promise.all([
       UserModel.find(baseFilter)
-        .select("email name ")
+        .select("email name")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(safeSize)
-        .lean()
         .exec(),
       UserModel.countDocuments(baseFilter).exec(),
     ]);
@@ -131,27 +119,20 @@ class UserService {
   /**
    * Update an existing user by id.
    */
-  async update(
-    id: string,
-    data: UpdateUserInput
-  ): Promise<{ id: string; email: string; name: string }> {
+  async update(id: string, data: UpdateUserInput): Promise<IUser> {
     try {
       const user = await UserModel.findOneAndUpdate(
         { _id: id, status: USER_STATUS.ACTIVE, deletedAt: null },
         { $set: data },
         { new: true, runValidators: true }
       )
-        .select("email name ")
+        .select("email name")
         .exec();
 
       if (!user) {
         throw new ApiError(404, "User not found");
       }
-      return {
-        id: user._id.toString(),
-        email: user.email,
-        name: user.name,
-      };
+      return user;
     } catch (error: unknown) {
       if (error instanceof ApiError) throw error;
       const err = error as { code?: number };

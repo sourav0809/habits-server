@@ -4,10 +4,10 @@ import { USER_STATUS } from "@/constant";
 
 /**
  * User document interface (MongoDB document + Mongoose methods).
+ * Use _id.toString() when you need a string id; toJSON output exposes id for API responses.
  */
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId;
-  id: string;
   email: string;
   name: string;
   password: string;
@@ -56,7 +56,7 @@ const userSchema = new Schema<IUser>(
     password: {
       type: String,
       required: true,
-      select: false, // Do not return password by default
+      select: false,
     },
     status: {
       type: String,
@@ -82,9 +82,6 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-userSchema.virtual("id").get(function (this: IUser) {
-  return this._id.toString();
-});
 userSchema.index({ status: 1, deletedAt: 1 });
 userSchema.index({ email: 1, status: 1, deletedAt: 1 });
 

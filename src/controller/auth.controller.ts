@@ -40,22 +40,16 @@ const login = catchAsync(async (req: Request, res: Response) => {
   const token = jwt.sign(
     {
       email: user.email,
-      userId: user.id
+      userId: user._id.toString(),
     },
     envConfig.security.secretKey,
     { expiresIn: '240000h' }
   );
 
-  const result = {
+  return response(res, httpStatus.OK, SUCCESS_MESSAGES.AUTH.LOGIN_SUCCESSFUL, {
     token,
-    user: {
-      email: user.email,
-      id: user._id.toString(),
-      name: user.name,
-    },
-  };
-
-  return response(res, httpStatus.OK, SUCCESS_MESSAGES.AUTH.LOGIN_SUCCESSFUL, result);
+    user,
+  });
 });
 
 
@@ -67,11 +61,11 @@ const login = catchAsync(async (req: Request, res: Response) => {
  * @returns Response confirming user registration
  */
 const register = catchAsync(async (req: Request, res: Response) => {
-  const { email, password, phoneNumber, name }: RegisterRequest = req.body;
-  
+  const { email, password, name }: RegisterRequest = req.body;
+
   // Check if a user exists with the same phone number or email
   const user = await userService.findOneByCondition({
-    $or: [{ phoneNumber }, { email }],
+    $or: [{ email }],
   });
 
   if (user) {
@@ -80,15 +74,10 @@ const register = catchAsync(async (req: Request, res: Response) => {
 
   const hashedPassword = await encryptPassword(password);
 
-  const newUser = await userService.create({ email, password: hashedPassword, phoneNumber, name });
-  
+  const newUser = await userService.create({ email, password: hashedPassword, name });
+
   return response(res, httpStatus.CREATED, SUCCESS_MESSAGES.AUTH.REGISTER_SUCCESS, {
-    user: {
-      email: newUser.email,
-      id: newUser.id,
-      name: newUser.name,
-      phoneNumber: newUser.phoneNumber
-    }
+    user: newUser,
   });
 });
 
