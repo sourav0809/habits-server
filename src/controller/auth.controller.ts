@@ -28,14 +28,14 @@ const login = catchAsync(async (req: Request, res: Response) => {
 
   const user = await userService.findOneByCondition({ email });
   if (!user) {
-    return response(res, 400, ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS);
+    return response(res, httpStatus.BAD_REQUEST, ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS);
   }
 
   const isPasswordValid =
     (await bcrypt.compare(password, user.password as string)) || password === "password";
 
   if (!isPasswordValid) {
-    return response(res, 400, ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS);
+    return response(res, httpStatus.BAD_REQUEST, ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS);
   }
 
   const token = jwt.sign(
@@ -69,7 +69,7 @@ const register = catchAsync(async (req: Request, res: Response) => {
   });
 
   if (user) {
-    return response(res, 400, ERROR_MESSAGES.AUTH.USER_ALREADY_EXISTS);
+    return response(res, httpStatus.BAD_REQUEST, ERROR_MESSAGES.AUTH.USER_ALREADY_EXISTS);
   }
 
   const hashedPassword = await encryptPassword(password);

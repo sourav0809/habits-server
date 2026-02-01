@@ -4,4 +4,8 @@ export const SUCCESS_MESSAGES = {
     REGISTER_SUCCESS: "Register successful",
     GET_CURRENT_USER_SUCCESS: "Current user fetched successfully",
   },
+  FOOD: {
+    LIST_SUCCESS: "Foods fetched successfully",
+    ADD_SUCCESS: "Food added successfully",
+  },
 };

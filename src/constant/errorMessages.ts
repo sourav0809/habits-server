@@ -5,6 +5,9 @@ const ERROR_MESSAGES = {
     USER_NOT_FOUND: "User not found",
     USER_ALREADY_EXISTS: "User already exists",
   },
+  FOOD: {
+    CREATE_FAILED: "Failed to add food",
+  },
 };
 
 export default ERROR_MESSAGES;
