@@ -1,3 +1,5 @@
+import type { Request } from "express";
+import type { IUser } from "@/models/user.model";
 import Joi from "joi";
 
 export interface JoiValidationSchema {
@@ -30,4 +32,9 @@ export interface AuthResponse {
     id: string;
     email: string;
   };
+}
+
+/** Request with authenticated user (set by auth middleware). */
+export interface AuthenticatedRequest extends Request {
+  user: IUser;
 }

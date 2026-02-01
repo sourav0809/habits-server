@@ -15,6 +15,7 @@ import ERROR_MESSAGES from '@/constant/errorMessages';
 import { envConfig } from '@/config';
 import { SUCCESS_MESSAGES } from '@/constant';
 import { encryptPassword } from '@/utils/encryption';
+import { IUser } from '@/models/user.model';
 
 /**
  * Authenticate user with email and password
@@ -82,7 +83,16 @@ const register = catchAsync(async (req: Request, res: Response) => {
 });
 
 
+const getCurrentUser = catchAsync(async (req: Request, res: Response) => {
+  const user = (req as Request & { user: IUser }).user;
+  return response(res, httpStatus.OK, SUCCESS_MESSAGES.AUTH.GET_CURRENT_USER_SUCCESS, {
+    user,
+  });
+});
+
+
 export default {
   login,
-  register
+  register,
+  getCurrentUser
 };

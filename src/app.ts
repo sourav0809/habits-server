@@ -5,7 +5,7 @@ import compression from "compression";
 
 import { notFound } from "./middlewares/common.middleware";
 import { errorHandler } from "./middlewares/error.middleware";
-import authRoutes from "./routes/auth.routes";
+import v1Routes from "./routes";
 
 export const createApp = (): Application => {
   const app = express();
@@ -24,11 +24,11 @@ export const createApp = (): Application => {
 
   // Health check
   app.get("/health", (_, res) => {
-    res.status(200).json({ status: "healthy ! Thank you for checking" });
+    res.status(200).json({ status: "healthy !" });
   });
 
   // API routes
-  app.use("/api/v1/auth", authRoutes);
+  app.use("/api/v1", v1Routes);
 
   app.use(notFound);
   app.use(errorHandler);

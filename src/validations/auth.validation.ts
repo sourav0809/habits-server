@@ -11,7 +11,6 @@ export const registerSchema: JoiValidationSchema = {
     email: Joi.string().email().required(),
     name: Joi.string().required(),
     password: Joi.string().required(),
-    phoneNumber: Joi.string().required(),
   }),
 };
 
