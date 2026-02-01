@@ -10,6 +10,7 @@ const ERROR_MESSAGES = {
     NOT_FOUND: "Food not found",
     UPDATE_FAILED: "Failed to update food",
     DELETE_FAILED: "Failed to delete food",
+    USED_IN_MEALS: "Cannot delete food that is already used in meals",
   },
 };
 

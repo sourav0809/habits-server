@@ -14,11 +14,11 @@ class UserService {
    */
   async create(data: CreateUserInput): Promise<IUser> {
     try {
-      const user = await UserModel.create({
+      return await UserModel.create({
         ...data,
         status: USER_STATUS.ACTIVE,
       });
-      return user;
+
     } catch (error: unknown) {
       const err = error as { code?: number };
       if (err.code === 11000) {

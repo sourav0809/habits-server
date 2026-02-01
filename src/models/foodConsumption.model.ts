@@ -1,10 +1,11 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 /**
- * FoodIntake document (food consumed in a given activity/day).
- * Ref: food_intake.userActivityId > user_activities._id, food_intake.userFoodId > user_foods._id
+ * FoodConsumption document (food consumed in a given activity/day).
+ * Collection: food_consumptions.
+ * Ref: food_consumptions.userActivityId > user_activities._id, food_consumptions.userFoodId > user_foods._id
  */
-export interface IFoodIntake extends Document {
+export interface IFoodConsumption extends Document {
   _id: mongoose.Types.ObjectId;
   userActivityId: mongoose.Types.ObjectId;
   userFoodId: mongoose.Types.ObjectId;
@@ -16,7 +17,7 @@ export interface IFoodIntake extends Document {
   updatedAt: Date;
 }
 
-const foodIntakeSchema = new Schema<IFoodIntake>(
+const foodConsumptionSchema = new Schema<IFoodConsumption>(
   {
     userActivityId: {
       type: Schema.Types.ObjectId,
@@ -51,7 +52,7 @@ const foodIntakeSchema = new Schema<IFoodIntake>(
   },
   {
     timestamps: true,
-    collection: "food_intake",
+    collection: "food_consumptions",
     toJSON: {
       virtuals: true,
       transform(_doc, ret: Record<string, unknown>) {
@@ -63,9 +64,12 @@ const foodIntakeSchema = new Schema<IFoodIntake>(
   }
 );
 
-foodIntakeSchema.index({ userActivityId: 1, deletedAt: 1, isDeleted: 1 });
-foodIntakeSchema.index({ userFoodId: 1, deletedAt: 1, isDeleted: 1 });
+foodConsumptionSchema.index({ userActivityId: 1, deletedAt: 1, isDeleted: 1 });
+foodConsumptionSchema.index({ userFoodId: 1, deletedAt: 1, isDeleted: 1 });
 
-const FoodIntakeModel = mongoose.model<IFoodIntake>("FoodIntake", foodIntakeSchema);
+const FoodConsumptionModel = mongoose.model<IFoodConsumption>(
+  "FoodConsumption",
+  foodConsumptionSchema
+);
 
-export default FoodIntakeModel;
+export default FoodConsumptionModel;

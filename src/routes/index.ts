@@ -1,10 +1,10 @@
 import express from "express";
 import authRoutes from "./auth.routes";
-import foodRoutes from "./food.routes";
+import userFoodRoutes from "./userFood.routes";
 
 const router = express.Router();
 
 router.use("/auth", authRoutes);
-router.use("/food", foodRoutes);
+router.use("/user/food", userFoodRoutes);
 
-export default router;
+export default router;    

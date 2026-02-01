@@ -1,10 +1,11 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 /**
- * WaterIntake document (water logged for a given activity/day).
- * Ref: water_intake.userActivityId > user_activities._id
+ * WaterConsumption document (water logged for a given activity/day).
+ * Collection: water_consumptions.
+ * Ref: water_consumptions.userActivityId > user_activities._id
  */
-export interface IWaterIntake extends Document {
+export interface IWaterConsumption extends Document {
   _id: mongoose.Types.ObjectId;
   userActivityId: mongoose.Types.ObjectId;
   amountMl: number;
@@ -14,7 +15,7 @@ export interface IWaterIntake extends Document {
   updatedAt: Date;
 }
 
-const waterIntakeSchema = new Schema<IWaterIntake>(
+const waterConsumptionSchema = new Schema<IWaterConsumption>(
   {
     userActivityId: {
       type: Schema.Types.ObjectId,
@@ -38,7 +39,7 @@ const waterIntakeSchema = new Schema<IWaterIntake>(
   },
   {
     timestamps: true,
-    collection: "water_intake",
+    collection: "water_consumptions",
     toJSON: {
       virtuals: true,
       transform(_doc, ret: Record<string, unknown>) {
@@ -50,8 +51,11 @@ const waterIntakeSchema = new Schema<IWaterIntake>(
   }
 );
 
-waterIntakeSchema.index({ userActivityId: 1, deletedAt: 1, isDeleted: 1 });
+waterConsumptionSchema.index({ userActivityId: 1, deletedAt: 1, isDeleted: 1 });
 
-const WaterIntakeModel = mongoose.model<IWaterIntake>("WaterIntake", waterIntakeSchema);
+const WaterConsumptionModel = mongoose.model<IWaterConsumption>(
+  "WaterConsumption",
+  waterConsumptionSchema
+);
 
-export default WaterIntakeModel;
+export default WaterConsumptionModel;

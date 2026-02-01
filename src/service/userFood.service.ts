@@ -1,17 +1,17 @@
 import ApiError from "@/utils/apiError";
-import { UserFoodModel } from "@/models";
+import { UserFoodModel, UserActivityModel, FoodConsumptionModel } from "@/models";
 import type { CreateUserFoodInput, IUserFood, UpdateUserFoodInput } from "@/models";
 import type { FilterQuery } from "mongoose";
 
 /**
  * UserFood Service
- * Handles operations for user-defined foods. Returns non-deleted foods only.
+ * Handles operations for user-defined food (user_foods). Returns non-deleted only.
  */
 class UserFoodService {
   /**
    * Get all foods for a user (no pagination). Excludes soft-deleted.
    */
-  async getFoods(condition: FilterQuery<IUserFood>): Promise<IUserFood[]> {
+  async getAll(condition: FilterQuery<IUserFood>): Promise<IUserFood[]> {
     const foods = await UserFoodModel.find({
       ...condition,
       deletedAt: null,
@@ -25,7 +25,7 @@ class UserFoodService {
   /**
    * Create a new food for a user.
    */
-  async createFood(data: CreateUserFoodInput): Promise<IUserFood> {
+  async create(data: CreateUserFoodInput): Promise<IUserFood> {
     try {
       return await UserFoodModel.create(data);
     } catch (error: unknown) {
@@ -38,7 +38,7 @@ class UserFoodService {
   /**
    * Update a food by id. Only updates if it belongs to the user and is not soft-deleted.
    */
-  async updateFood(userId: string, foodId: string, data: UpdateUserFoodInput): Promise<IUserFood> {
+  async update(userId: string, foodId: string, data: UpdateUserFoodInput): Promise<IUserFood> {
     try {
       const food = await UserFoodModel.findOneAndUpdate(
         { _id: foodId, userId, deletedAt: null, isDeleted: false },
@@ -60,7 +60,7 @@ class UserFoodService {
   /**
    * Soft delete a food by id. Sets deletedAt and isDeleted. Only affects if it belongs to the user and not already deleted.
    */
-  async deleteFood(userId: string, foodId: string): Promise<void> {
+  async delete(userId: string, foodId: string): Promise<void> {
     const result = await UserFoodModel.updateOne(
       { _id: foodId, userId, deletedAt: null, isDeleted: false },
       { $set: { deletedAt: new Date(), isDeleted: true } }
@@ -69,6 +69,14 @@ class UserFoodService {
     if (result.matchedCount === 0) {
       throw new ApiError(404, "Food not found");
     }
+  }
+
+  /**
+   * Find a single food by condition.
+   */
+  async findOne(condition: FilterQuery<IUserFood>): Promise<IUserFood | null> {
+    const res = await UserFoodModel.findOne(condition).exec();
+    return res ?? null;
   }
 }
 

@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from "mongoose";
 
 /**
  * UserFood document (food item defined by user).
- * Ref: user_foods.userId > users._id
+ * Collection: user_foods. Ref: user_foods.userId > users._id
  */
 export interface IUserFood extends Document {
   _id: mongoose.Types.ObjectId;
