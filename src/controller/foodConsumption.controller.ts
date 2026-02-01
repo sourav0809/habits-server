@@ -10,7 +10,7 @@ import userFoodService from "@/service/userFood.service";
 import { SUCCESS_MESSAGES } from "@/constant";
 import ERROR_MESSAGES from "@/constant/errorMessages";
 import ApiError from "@/utils/apiError";
-import { startOfDayUTC } from "@/service/userActivity.service";
+import { startOfDayUTC } from "@/utils/date";
 
 /**
  * Get all food consumptions for the authenticated user in a date range.

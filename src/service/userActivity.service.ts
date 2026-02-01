@@ -1,14 +1,10 @@
 import { UserActivityModel } from "@/models";
 import type { IUserActivity } from "@/models";
+import { startOfDayUTC } from "@/utils/date";
 import mongoose from "mongoose";
 import type { FilterQuery } from "mongoose";
 
-/**
- * Normalize a date to start of day (00:00:00.000) in UTC.
- */
-function startOfDayUTC(date: Date): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-}
+
 
 /**
  * UserActivity Service

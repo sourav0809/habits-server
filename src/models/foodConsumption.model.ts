@@ -47,7 +47,7 @@ const foodConsumptionSchema = new Schema<IFoodConsumption>(
     quantity: {
       type: Number,
       required: true,
-      min: 0,
+      min: 0, // this is stored as grams
     },
     totalCalories: {
       type: Number,
