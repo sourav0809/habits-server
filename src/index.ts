@@ -16,7 +16,6 @@ const startServer = async () => {
     app.listen(PORT, () => {
       logger.info(`Server is running on port ${PORT}`);
       logger.info(`Health check: http://localhost:${PORT}/health`);
-      logger.info(`Auth API: http://localhost:${PORT}/api/v1/auth`);
     });
 
     process.on("uncaughtException", (error: Error) => {

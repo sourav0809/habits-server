@@ -6,6 +6,5 @@ export interface LoginRequest {
 export interface RegisterRequest {
   email: string;
   password: string;
-  phoneNumber: string;
   name: string;
 }

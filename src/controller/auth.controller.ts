@@ -10,12 +10,12 @@ import jwt from 'jsonwebtoken';
 import catchAsync from '../utils/catchAsync';
 import { response } from '../utils/response';
 import { LoginRequest, RegisterRequest } from '@/types';
+import type { AuthenticatedRequest } from '@/types';
 import userService from '@/service/user.service';
 import ERROR_MESSAGES from '@/constant/errorMessages';
 import { envConfig } from '@/config';
 import { SUCCESS_MESSAGES } from '@/constant';
 import { encryptPassword } from '@/utils/encryption';
-import { IUser } from '@/models/user.model';
 
 /**
  * Authenticate user with email and password
@@ -64,9 +64,8 @@ const login = catchAsync(async (req: Request, res: Response) => {
 const register = catchAsync(async (req: Request, res: Response) => {
   const { email, password, name }: RegisterRequest = req.body;
 
-  // Check if a user exists with the same phone number or email
   const user = await userService.findOneByCondition({
-    $or: [{ email }],
+    email,
   });
 
   if (user) {
@@ -77,14 +76,24 @@ const register = catchAsync(async (req: Request, res: Response) => {
 
   const newUser = await userService.create({ email, password: hashedPassword, name });
 
+  const token = jwt.sign(
+    {
+      email: newUser.email,
+      userId: newUser.id.toString(),
+    },
+    envConfig.security.secretKey,
+    { expiresIn: '240000h' }
+  );
+
   return response(res, httpStatus.CREATED, SUCCESS_MESSAGES.AUTH.REGISTER_SUCCESS, {
+    token,
     user: newUser,
   });
 });
 
 
 const getCurrentUser = catchAsync(async (req: Request, res: Response) => {
-  const user = (req as Request & { user: IUser }).user;
+  const user = (req as AuthenticatedRequest).user;
   return response(res, httpStatus.OK, SUCCESS_MESSAGES.AUTH.GET_CURRENT_USER_SUCCESS, {
     user,
   });
