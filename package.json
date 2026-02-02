@@ -4,11 +4,10 @@
   "description": "Production-ready Node.js backend with TypeScript and MongoDB",
   "main": "build/index.js",
   "scripts": {
-    "start": "node build/index.js",
+    "lint": "eslint . --ext .ts",
     "build": "tsc",
     "dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only src/index.ts",
-    "lint": "eslint . --ext .ts",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node -r tsconfig-paths/register build/index.js",
     "start:prod": "pm2 startOrRestart ./pm2/ecosystem.prod.config.json --only habits-prod"
   },
   "keywords": [],
@@ -27,6 +26,7 @@
     "jsonwebtoken": "^9.0.2",
     "moment-timezone": "^0.6.0",
     "mongoose": "^8.16.0",
+    "tsconfig-paths": "^4.2.0",
     "winston": "^3.17.0"
   },
   "devDependencies": {
@@ -38,7 +38,6 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.10.9",
     "ts-node-dev": "^2.0.0",
-    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"
   }
 }

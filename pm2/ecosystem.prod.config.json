@@ -2,10 +2,8 @@
   "apps": [
     {
       "name": "habits-prod",
-      "script": "./build/src/index.js",
-      "exec_mode": "cluster",
-      "instances": "1",
-      "watch": true,
+      "script": "node",
+      "args": "-r tsconfig-paths/register build/index.js",
       "env": {
         "NODE_ENV": "production",
         "PORT": 8001
