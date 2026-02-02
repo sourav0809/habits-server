@@ -2,7 +2,7 @@
   "apps": [
     {
       "name": "habits-prod",
-      "script": "build/src/index.js",
+      "script": "build/index.js",
       "cwd": "/home/ubuntu/habits-server/_work/habits-server/habits-server",
       "node_args": "-r tsconfig-paths/register",
       "exec_mode": "fork",
