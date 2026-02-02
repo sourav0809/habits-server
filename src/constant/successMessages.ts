@@ -27,4 +27,7 @@ export const SUCCESS_MESSAGES = {
     CREATE_SUCCESS: "Goal created successfully",
     UPDATE_SUCCESS: "Goal updated successfully",
   },
+  USER_ACTIVITY: {
+    GET_TODAY_ACTIVITYS_SUCCESS: "Today activities fetched successfully",
+  },
 };

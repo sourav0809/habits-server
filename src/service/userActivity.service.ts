@@ -1,3 +1,4 @@
+
 import { UserActivityModel } from "@/models";
 import type { IUserActivity } from "@/models";
 import { getStartOfDayAsDate } from "@/utils/date";
@@ -111,6 +112,15 @@ class UserActivityService {
       .exec();
 
     return activities;
+  }
+
+  async getUserActivity(condition: FilterQuery<IUserActivity>): Promise<IUserActivity | null> {
+    try {
+      const activity = await UserActivityModel.findOne({ ...condition, deletedAt: null, isDeleted: false }).exec();
+      return activity ?? null;
+    } catch (error) {
+      throw error;
+    }
   }
 }
 

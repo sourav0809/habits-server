@@ -28,6 +28,9 @@ const ERROR_MESSAGES = {
     CREATE_FAILED: "Failed to create goal",
     UPDATE_FAILED: "Failed to update goal",
   },
+  USER_ACTIVITY: {
+    GET_USER_ACTIVITY_ERROR: "Failed to get user activity",
+  },
 };
 
 export default ERROR_MESSAGES;
