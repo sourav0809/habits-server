@@ -42,13 +42,17 @@ export const getOneFoodConsumptionSchema: JoiValidationSchema = {
 };
 
 /**
- * Update food consumption schema (params: id, body: quantity)
+ * Update food consumption schema (params: id, body: quantity, dateAndTime, userFoodId — all optional).
+ * userActivityId is derived from dateAndTime (start of day); do not send it.
  */
 export const updateFoodConsumptionSchema: JoiValidationSchema = {
   params: idParam,
-  body: Joi.object().keys({
-    quantity: Joi.number().min(0).optional(),
-    dateAndTime: Joi.date().optional(),
-
-  }),
+  body: Joi.object()
+    .keys({
+      quantity: Joi.number().min(0).optional(),
+      dateAndTime: Joi.alternatives().try(Joi.date(), Joi.string()).optional(),
+      userFoodId: Joi.string().length(24).hex().optional(),
+    })
+    .min(1)
+    .messages({ "object.min": "At least one of quantity, dateAndTime, or userFoodId is required" }),
 };

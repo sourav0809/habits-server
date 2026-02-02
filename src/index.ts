@@ -1,4 +1,7 @@
-import 'module-alias/register';
+// In production, @ resolves to build/ via module-alias. In dev, use -r tsconfig-paths/register so @ -> src/
+if (process.env.NODE_ENV === "production") {
+  require("module-alias/register");
+}
 import dotenv from "dotenv";
 
 import logger from "./config/logger";

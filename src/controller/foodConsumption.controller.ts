@@ -10,7 +10,10 @@ import userFoodService from "@/service/userFood.service";
 import { SUCCESS_MESSAGES } from "@/constant";
 import ERROR_MESSAGES from "@/constant/errorMessages";
 import ApiError from "@/utils/apiError";
-import { getStartOfDayAsDate } from "@/utils/date";
+import { getEndOfDayAsDate, getStartOfDayAsDate } from "@/utils/date";
+
+// Runs once when this file is first imported (at server startup)
+console.log("[foodConsumption.controller] loaded");
 
 /**
  * Get all food consumptions for the authenticated user in a date range.
@@ -20,9 +23,10 @@ const getFoodConsumptions = catchAsync(async (req: Request, res: Response) => {
   const user = (req as AuthenticatedRequest).user;
   const { startDate: startDateQuery, endDate: endDateQuery } = req.query;
 
-  const today = getStartOfDayAsDate(new Date());
-  const start = startDateQuery ? getStartOfDayAsDate(new Date(startDateQuery as string)) : today;
-  const end = endDateQuery ? getStartOfDayAsDate(new Date(endDateQuery as string)) : today;
+
+  const today = getStartOfDayAsDate();
+  const start = startDateQuery ? getStartOfDayAsDate(startDateQuery as string) : today;
+  const end = endDateQuery ? getEndOfDayAsDate(endDateQuery as string) : getEndOfDayAsDate();
 
   const condition = {
     userId: user.id,
@@ -66,6 +70,7 @@ const getFoodConsumption = catchAsync(async (req: Request, res: Response) => {
  * Transaction in controller.
  */
 const addFoodConsumption = catchAsync(async (req: Request, res: Response) => {
+  console.log("[addFoodConsumption] called");
   const user = (req as AuthenticatedRequest).user;
   const { userFoodId, quantity, dateAndTime } = req.body;
 
@@ -95,7 +100,7 @@ const addFoodConsumption = catchAsync(async (req: Request, res: Response) => {
         userId: activity.userId.toString(),
         userActivityId: activity._id.toString(),
         userFoodId,
-        dateAndTime,
+        dateAndTime: day, // store start of day (project TZ) so query by date range returns this entry
         quantity,
         totalCalories,
       },
@@ -126,13 +131,14 @@ const addFoodConsumption = catchAsync(async (req: Request, res: Response) => {
 });
 
 /**
- * Update a food consumption (quantity). Recalculates totalCalories and adjusts activity totalCalories.
- * Transaction in controller: get consumption, get food, recalc calories, update consumption, update activity.
+ * Update a food consumption (quantity, dateAndTime, userFoodId — any combination).
+ * Recalculates totalCalories when quantity or userFoodId changes. If dateAndTime changes to another day,
+ * moves the entry to that day's activity (deduct from old activity, add to new).
  */
 const updateFoodConsumption = catchAsync(async (req: Request, res: Response) => {
   const user = (req as AuthenticatedRequest).user;
   const id = req.params.id as string;
-  const { quantity } = req.body;
+  const { quantity: bodyQuantity, dateAndTime: bodyDateAndTime, userFoodId: bodyUserFoodId } = req.body;
 
   const consumption = await foodConsumptionService.findOne(
     { _id: id, userId: user.id }
@@ -141,8 +147,11 @@ const updateFoodConsumption = catchAsync(async (req: Request, res: Response) => 
     throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.FOOD_CONSUMPTION.NOT_FOUND);
   }
 
+  const effectiveQuantity = bodyQuantity ?? consumption.quantity;
+  const effectiveUserFoodId = bodyUserFoodId ?? consumption.userFoodId;
+
   const userFood = await userFoodService.findOne({
-    _id: consumption.userFoodId,
+    _id: effectiveUserFoodId,
     userId: user.id,
     deletedAt: null,
     isDeleted: false,
@@ -152,31 +161,86 @@ const updateFoodConsumption = catchAsync(async (req: Request, res: Response) => 
   }
 
   const newTotalCalories =
-    Math.round((userFood.caloriesPerGram ?? 0) * quantity * 100) / 100;
+    Math.round((userFood.caloriesPerGram ?? 0) * effectiveQuantity * 100) / 100;
   const oldTotalCalories = consumption.totalCalories ?? 0;
-  const delta = newTotalCalories - oldTotalCalories;
-
-  const activity = await userActivityService.findOneById(
-    user.id,
-    consumption.userActivityId.toString()
-  );
-  if (!activity) {
-    throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.FOOD_CONSUMPTION.NOT_FOUND);
-  }
 
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
+    const updatePayload: Record<string, unknown> = {
+      quantity: effectiveQuantity,
+      totalCalories: newTotalCalories,
+    };
+    if (bodyUserFoodId !== undefined) updatePayload.userFoodId = bodyUserFoodId;
+
+    if (bodyDateAndTime !== undefined) {
+      const newDay = getStartOfDayAsDate();
+      const oldDay = getStartOfDayAsDate(consumption.dateAndTime);
+
+      if (newDay.getTime() !== oldDay.getTime()) {
+        // Move to another day: deduct from old activity, add to new activity
+        const oldActivity = await userActivityService.findOneById(
+          user.id,
+          consumption.userActivityId.toString()
+        );
+        if (oldActivity) {
+          const oldActivityNewTotal = Math.max(
+            0,
+            (oldActivity.totalCalories ?? 0) - oldTotalCalories
+          );
+          await userActivityService.update(
+            { _id: oldActivity._id },
+            { $set: { totalCalories: oldActivityNewTotal } },
+            session
+          );
+        }
+
+        const newActivity = await userActivityService.getOrCreate(user.id, newDay, session);
+        await userActivityService.update(
+          { _id: newActivity._id },
+          { $inc: { totalCalories: newTotalCalories } },
+          session
+        );
+
+        updatePayload.userActivityId = newActivity._id;
+        updatePayload.dateAndTime = newDay;
+      } else {
+        // Same day: just adjust activity by calorie delta
+        const activity = await userActivityService.findOneById(
+          user.id,
+          consumption.userActivityId.toString()
+        );
+        if (activity) {
+          const delta = newTotalCalories - oldTotalCalories;
+          const newActivityTotal = Math.max(0, (activity.totalCalories ?? 0) + delta);
+          await userActivityService.update(
+            { _id: activity._id },
+            { $set: { totalCalories: newActivityTotal } },
+            session
+          );
+        }
+      }
+    } else {
+      // No date change: apply calorie delta to current activity
+      const activity = await userActivityService.findOneById(
+        user.id,
+        consumption.userActivityId.toString()
+      );
+      if (activity) {
+        const delta = newTotalCalories - oldTotalCalories;
+        const newActivityTotal = Math.max(0, (activity.totalCalories ?? 0) + delta);
+        await userActivityService.update(
+          { _id: activity._id },
+          { $set: { totalCalories: newActivityTotal } },
+          session
+        );
+      }
+    }
+
     await foodConsumptionService.update(
       { _id: id, userId: user.id },
-      { $set: { quantity, totalCalories: newTotalCalories } },
-      session
-    );
-    const newActivityTotal = Math.max(0, (activity.totalCalories ?? 0) + delta);
-    await userActivityService.update(
-      { _id: activity._id },
-      { $set: { totalCalories: newActivityTotal } },
+      { $set: updatePayload },
       session
     );
 
