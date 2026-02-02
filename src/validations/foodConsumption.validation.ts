@@ -13,7 +13,7 @@ export const createFoodConsumptionSchema: JoiValidationSchema = {
   body: Joi.object().keys({
     userFoodId: Joi.string().length(24).hex().required(),
     quantity: Joi.number().min(0).required(),
-    date: Joi.date().optional().allow(null),
+    dateAndTime: Joi.date().required(),
   }),
 };
 
@@ -39,4 +39,16 @@ export const deleteFoodConsumptionSchema: JoiValidationSchema = {
  */
 export const getOneFoodConsumptionSchema: JoiValidationSchema = {
   params: idParam,
+};
+
+/**
+ * Update food consumption schema (params: id, body: quantity)
+ */
+export const updateFoodConsumptionSchema: JoiValidationSchema = {
+  params: idParam,
+  body: Joi.object().keys({
+    quantity: Joi.number().min(0).optional(),
+    dateAndTime: Joi.date().optional(),
+
+  }),
 };

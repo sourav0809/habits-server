@@ -13,6 +13,7 @@ export const SUCCESS_MESSAGES = {
   FOOD_CONSUMPTION: {
     LIST_SUCCESS: "Food consumptions fetched successfully",
     ADD_SUCCESS: "Food consumption added successfully",
+    UPDATE_SUCCESS: "Food consumption updated successfully",
     DELETE_SUCCESS: "Food consumption deleted successfully",
   },
 };

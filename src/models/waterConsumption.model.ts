@@ -13,6 +13,7 @@ export interface IWaterConsumption extends Document {
   isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
+  dateAndTime: Date;
 }
 
 const waterConsumptionSchema = new Schema<IWaterConsumption>(
@@ -31,6 +32,11 @@ const waterConsumptionSchema = new Schema<IWaterConsumption>(
     deletedAt: {
       type: Date,
       default: null,
+    },
+    dateAndTime: {
+      type: Date,
+      required: true,
+      index: true,
     },
     isDeleted: {
       type: Boolean,

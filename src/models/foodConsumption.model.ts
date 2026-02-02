@@ -10,7 +10,7 @@ export interface IFoodConsumption extends Document {
   userId: mongoose.Types.ObjectId;
   userActivityId: mongoose.Types.ObjectId;
   userFoodId: mongoose.Types.ObjectId;
-  date: Date;
+  dateAndTime: Date;
   quantity: number;
   totalCalories: number;
   deletedAt: Date | null;
@@ -39,7 +39,7 @@ const foodConsumptionSchema = new Schema<IFoodConsumption>(
       required: true,
       index: true,
     },
-    date: {
+    dateAndTime: {
       type: Date,
       required: true,
       index: true,
@@ -77,7 +77,7 @@ const foodConsumptionSchema = new Schema<IFoodConsumption>(
   }
 );
 
-foodConsumptionSchema.index({ userId: 1, date: 1, deletedAt: 1, isDeleted: 1 });
+foodConsumptionSchema.index({ userId: 1, dateAndTime: 1, deletedAt: 1, isDeleted: 1 });
 foodConsumptionSchema.index({ userActivityId: 1, deletedAt: 1, isDeleted: 1 });
 foodConsumptionSchema.index({ userFoodId: 1, deletedAt: 1, isDeleted: 1 });
 

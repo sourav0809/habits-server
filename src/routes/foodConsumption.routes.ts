@@ -8,6 +8,7 @@ import {
   getAllFoodConsumptionSchema,
   deleteFoodConsumptionSchema,
   getOneFoodConsumptionSchema,
+  updateFoodConsumptionSchema,
 } from "@/validations/foodConsumption.validation";
 
 const router = express.Router();
@@ -31,6 +32,11 @@ router
     authMiddleware,
     validate(getOneFoodConsumptionSchema),
     foodConsumptionController.getFoodConsumption
+  )
+  .patch(
+    authMiddleware,
+    validate(updateFoodConsumptionSchema),
+    foodConsumptionController.updateFoodConsumption
   )
   .delete(
     authMiddleware,

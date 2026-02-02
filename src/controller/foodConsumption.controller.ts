@@ -26,7 +26,7 @@ const getFoodConsumptions = catchAsync(async (req: Request, res: Response) => {
 
   const condition = {
     userId: user.id,
-    date: { $gte: start, $lte: end },
+    dateAndTime: { $gte: start, $lte: end },
   };
 
   const consumptions = await foodConsumptionService.getAll(condition);
@@ -60,13 +60,16 @@ const getFoodConsumption = catchAsync(async (req: Request, res: Response) => {
 
 /**
  * Add a food consumption (log food for a day).
- * Controller: get/create user activity, then create or update consumption (same date + same food = update row). Transaction here.
+ * Always creates a NEW row in food_consumptions — never finds/updates by userFoodId + date.
+ * Same food can be added multiple times (e.g. 3x same item = 3 consumption rows).
+ * userActivity: one row per user per day; multiple items same day = $inc totalCalories; different date = new activity row.
+ * Transaction in controller.
  */
 const addFoodConsumption = catchAsync(async (req: Request, res: Response) => {
   const user = (req as AuthenticatedRequest).user;
-  const { userFoodId, quantity, date } = req.body;
+  const { userFoodId, quantity, dateAndTime } = req.body;
 
-  const day = date ? startOfDayUTC(new Date(date)) : startOfDayUTC(new Date());
+  const day = dateAndTime ? startOfDayUTC(new Date(dateAndTime)) : startOfDayUTC(new Date());
 
   const userFood = await userFoodService.findOne({
     _id: userFoodId,
@@ -87,50 +90,28 @@ const addFoodConsumption = catchAsync(async (req: Request, res: Response) => {
   try {
     const activity = await userActivityService.getOrCreate(user.id, day, session);
 
-    const existing = await foodConsumptionService.findOne(
+    const consumption = await foodConsumptionService.create(
       {
-        userActivityId: activity._id,
+        userId: activity.userId.toString(),
+        userActivityId: activity._id.toString(),
         userFoodId,
+        dateAndTime,
+        quantity,
+        totalCalories,
       },
       session
     );
 
-    let consumption;
-
-    if (existing) {
-      consumption = await foodConsumptionService.update(
-        { userActivityId: activity._id, userFoodId },
-        { $inc: { quantity, totalCalories } },
-        session
-      );
-      await userActivityService.update(
-        { _id: activity._id },
-        { $inc: { totalCalories } },
-        session
-      );
-    } else {
-      consumption = await foodConsumptionService.create(
-        {
-          userId: activity.userId.toString(),
-          userActivityId: activity._id.toString(),
-          userFoodId,
-          date: activity.date,
-          quantity,
-          totalCalories,
-        },
-        session
-      );
-      await userActivityService.update(
-        { _id: activity._id },
-        { $inc: { totalCalories } },
-        session
-      );
-    }
+    await userActivityService.update(
+      { _id: activity._id },
+      { $inc: { totalCalories } },
+      session
+    );
 
     await session.commitTransaction();
 
     return response(res, httpStatus.CREATED, SUCCESS_MESSAGES.FOOD_CONSUMPTION.ADD_SUCCESS, {
-      consumption: consumption ?? undefined,
+      consumption,
     });
   } catch (error: unknown) {
     await session.abortTransaction();
@@ -139,6 +120,80 @@ const addFoodConsumption = catchAsync(async (req: Request, res: Response) => {
       httpStatus.INTERNAL_SERVER_ERROR,
       `Failed to add food consumption: ${error instanceof Error ? error.message : String(error)}`
     );
+  } finally {
+    session.endSession();
+  }
+});
+
+/**
+ * Update a food consumption (quantity). Recalculates totalCalories and adjusts activity totalCalories.
+ * Transaction in controller: get consumption, get food, recalc calories, update consumption, update activity.
+ */
+const updateFoodConsumption = catchAsync(async (req: Request, res: Response) => {
+  const user = (req as AuthenticatedRequest).user;
+  const id = req.params.id as string;
+  const { quantity } = req.body;
+
+  const consumption = await foodConsumptionService.findOne(
+    { _id: id, userId: user.id }
+  );
+  if (!consumption) {
+    throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.FOOD_CONSUMPTION.NOT_FOUND);
+  }
+
+  const userFood = await userFoodService.findOne({
+    _id: consumption.userFoodId,
+    userId: user.id,
+    deletedAt: null,
+    isDeleted: false,
+  });
+  if (!userFood) {
+    throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.FOOD.NOT_FOUND);
+  }
+
+  const newTotalCalories =
+    Math.round((userFood.caloriesPerGram ?? 0) * quantity * 100) / 100;
+  const oldTotalCalories = consumption.totalCalories ?? 0;
+  const delta = newTotalCalories - oldTotalCalories;
+
+  const activity = await userActivityService.findOneById(
+    user.id,
+    consumption.userActivityId.toString()
+  );
+  if (!activity) {
+    throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.FOOD_CONSUMPTION.NOT_FOUND);
+  }
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    await foodConsumptionService.update(
+      { _id: id, userId: user.id },
+      { $set: { quantity, totalCalories: newTotalCalories } },
+      session
+    );
+    const newActivityTotal = Math.max(0, (activity.totalCalories ?? 0) + delta);
+    await userActivityService.update(
+      { _id: activity._id },
+      { $set: { totalCalories: newActivityTotal } },
+      session
+    );
+
+    const updated = await foodConsumptionService.findOne(
+      { _id: id, userId: user.id },
+      session
+    );
+
+    await session.commitTransaction();
+
+    return response(res, httpStatus.OK, SUCCESS_MESSAGES.FOOD_CONSUMPTION.UPDATE_SUCCESS, {
+      consumption: updated ?? undefined,
+    });
+  } catch (error: unknown) {
+    await session.abortTransaction();
+    if (error instanceof ApiError) throw error;
+    throw error;
   } finally {
     session.endSession();
   }
@@ -197,5 +252,6 @@ export default {
   getFoodConsumption,
   getFoodConsumptions,
   addFoodConsumption,
+  updateFoodConsumption,
   deleteFoodConsumption,
 };

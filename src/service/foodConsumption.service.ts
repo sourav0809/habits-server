@@ -8,7 +8,7 @@ export interface CreateFoodConsumptionInput {
   userId: string;
   userActivityId: string;
   userFoodId: string;
-  date: Date;
+  dateAndTime: Date;
   quantity: number;
   totalCalories: number;
 }
@@ -50,7 +50,7 @@ class FoodConsumptionService {
           userId: data.userId,
           userActivityId: data.userActivityId,
           userFoodId: data.userFoodId,
-          date: data.date,
+          dateAndTime: data.dateAndTime,
           quantity: data.quantity,
           totalCalories: data.totalCalories,
         },
