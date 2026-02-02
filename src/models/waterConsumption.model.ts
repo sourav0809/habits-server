@@ -3,10 +3,11 @@ import mongoose, { Document, Schema } from "mongoose";
 /**
  * WaterConsumption document (water logged for a given activity/day).
  * Collection: water_consumptions.
- * Ref: water_consumptions.userActivityId > user_activities._id
+ * Ref: water_consumptions.userActivityId > user_activities._id, water_consumptions.userId > users._id
  */
 export interface IWaterConsumption extends Document {
   _id: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   userActivityId: mongoose.Types.ObjectId;
   amountMl: number;
   deletedAt: Date | null;
@@ -18,6 +19,12 @@ export interface IWaterConsumption extends Document {
 
 const waterConsumptionSchema = new Schema<IWaterConsumption>(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
     userActivityId: {
       type: Schema.Types.ObjectId,
       ref: "UserActivity",
@@ -58,6 +65,7 @@ const waterConsumptionSchema = new Schema<IWaterConsumption>(
 );
 
 waterConsumptionSchema.index({ userActivityId: 1, deletedAt: 1, isDeleted: 1 });
+waterConsumptionSchema.index({ userId: 1, dateAndTime: 1, deletedAt: 1, isDeleted: 1 });
 
 const WaterConsumptionModel = mongoose.model<IWaterConsumption>(
   "WaterConsumption",

@@ -16,4 +16,15 @@ export const SUCCESS_MESSAGES = {
     UPDATE_SUCCESS: "Food consumption updated successfully",
     DELETE_SUCCESS: "Food consumption deleted successfully",
   },
+  WATER_CONSUMPTION: {
+    LIST_SUCCESS: "Water intake fetched successfully",
+    ADD_SUCCESS: "Water intake added successfully",
+    UPDATE_SUCCESS: "Water intake updated successfully",
+    DELETE_SUCCESS: "Water intake deleted successfully",
+  },
+  USER_GOAL: {
+    GET_SUCCESS: "Goal fetched successfully",
+    CREATE_SUCCESS: "Goal created successfully",
+    UPDATE_SUCCESS: "Goal updated successfully",
+  },
 };

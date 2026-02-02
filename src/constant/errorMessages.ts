@@ -17,6 +17,17 @@ const ERROR_MESSAGES = {
     CREATE_FAILED: "Failed to add food consumption",
     DELETE_FAILED: "Failed to delete food consumption",
   },
+  WATER_CONSUMPTION: {
+    NOT_FOUND: "Water consumption not found",
+    CREATE_FAILED: "Failed to add water intake",
+    DELETE_FAILED: "Failed to delete water intake",
+  },
+  USER_GOAL: {
+    NOT_FOUND: "User goal not found",
+    ALREADY_EXISTS: "Goal already exists for this user; use PATCH to update",
+    CREATE_FAILED: "Failed to create goal",
+    UPDATE_FAILED: "Failed to update goal",
+  },
 };
 
 export default ERROR_MESSAGES;

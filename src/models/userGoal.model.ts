@@ -1,14 +1,14 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 /**
- * UserGoal document (user's target for a goal type, e.g. calories, water).
+ * UserGoal document: one row per user with daily targets for water (ml) and calories.
  * Ref: user_goals.userId > users._id
  */
 export interface IUserGoal extends Document {
   _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
-  type: string;
-  targetValue: number;
+  targetWaterMl: number;
+  targetCalories: number;
   deletedAt: Date | null;
   isDeleted: boolean;
   createdAt: Date;
@@ -22,16 +22,19 @@ const userGoalSchema = new Schema<IUserGoal>(
       ref: "User",
       required: true,
       index: true,
+      unique: true,
     },
-    type: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    targetValue: {
+    targetWaterMl: {
       type: Number,
       required: true,
       min: 0,
+      default: 0,
+    },
+    targetCalories: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
     },
     deletedAt: {
       type: Date,
@@ -57,7 +60,6 @@ const userGoalSchema = new Schema<IUserGoal>(
 );
 
 userGoalSchema.index({ userId: 1, deletedAt: 1, isDeleted: 1 });
-userGoalSchema.index({ userId: 1, type: 1, deletedAt: 1, isDeleted: 1 });
 
 const UserGoalModel = mongoose.model<IUserGoal>("UserGoal", userGoalSchema);
 
