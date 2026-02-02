@@ -1,4 +1,4 @@
-# Habits_Server
+# Habits Server Production
 
 A production-ready Node.js backend with TypeScript, MongoDB (Mongoose), JWT auth, and a clear layered structure.
 
