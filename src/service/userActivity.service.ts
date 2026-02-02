@@ -1,6 +1,6 @@
 import { UserActivityModel } from "@/models";
 import type { IUserActivity } from "@/models";
-import { startOfDayUTC } from "@/utils/date";
+import { getStartOfDayAsDate } from "@/utils/date";
 import mongoose from "mongoose";
 import type { FilterQuery } from "mongoose";
 
@@ -12,14 +12,14 @@ import type { FilterQuery } from "mongoose";
  */
 class UserActivityService {
   /**
-   * Get or create a user activity for the given userId and date (normalized to start of day UTC).
+   * Get or create a user activity for the given userId and date (normalized to start of day in project timezone).
    */
   async getOrCreate(
     userId: string,
     date: Date,
     session?: mongoose.mongo.ClientSession
   ): Promise<IUserActivity> {
-    const day = startOfDayUTC(date);
+    const day = getStartOfDayAsDate(date);
 
     let query = UserActivityModel.findOne({
       userId,
@@ -91,15 +91,15 @@ class UserActivityService {
   }
 
   /**
-   * Get activities for a user in a date range (inclusive). Dates normalized to start of day UTC.
+   * Get activities for a user in a date range (inclusive). Dates normalized to start of day in project timezone.
    */
   async getByDateRange(
     userId: string,
     startDate: Date,
     endDate: Date
   ): Promise<IUserActivity[]> {
-    const start = startOfDayUTC(startDate);
-    const end = startOfDayUTC(endDate);
+    const start = getStartOfDayAsDate(startDate);
+    const end = getStartOfDayAsDate(endDate);
 
     const activities = await UserActivityModel.find({
       userId,
@@ -115,4 +115,3 @@ class UserActivityService {
 }
 
 export default new UserActivityService();
-export { startOfDayUTC };

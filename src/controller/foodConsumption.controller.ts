@@ -10,7 +10,7 @@ import userFoodService from "@/service/userFood.service";
 import { SUCCESS_MESSAGES } from "@/constant";
 import ERROR_MESSAGES from "@/constant/errorMessages";
 import ApiError from "@/utils/apiError";
-import { startOfDayUTC } from "@/utils/date";
+import { getStartOfDayAsDate } from "@/utils/date";
 
 /**
  * Get all food consumptions for the authenticated user in a date range.
@@ -20,9 +20,9 @@ const getFoodConsumptions = catchAsync(async (req: Request, res: Response) => {
   const user = (req as AuthenticatedRequest).user;
   const { startDate: startDateQuery, endDate: endDateQuery } = req.query;
 
-  const today = startOfDayUTC(new Date());
-  const start = startDateQuery ? startOfDayUTC(new Date(startDateQuery as string)) : today;
-  const end = endDateQuery ? startOfDayUTC(new Date(endDateQuery as string)) : today;
+  const today = getStartOfDayAsDate(new Date());
+  const start = startDateQuery ? getStartOfDayAsDate(new Date(startDateQuery as string)) : today;
+  const end = endDateQuery ? getStartOfDayAsDate(new Date(endDateQuery as string)) : today;
 
   const condition = {
     userId: user.id,
@@ -69,7 +69,7 @@ const addFoodConsumption = catchAsync(async (req: Request, res: Response) => {
   const user = (req as AuthenticatedRequest).user;
   const { userFoodId, quantity, dateAndTime } = req.body;
 
-  const day = dateAndTime ? startOfDayUTC(new Date(dateAndTime)) : startOfDayUTC(new Date());
+  const day = dateAndTime ? getStartOfDayAsDate(new Date(dateAndTime)) : getStartOfDayAsDate(new Date());
 
   const userFood = await userFoodService.findOne({
     _id: userFoodId,
