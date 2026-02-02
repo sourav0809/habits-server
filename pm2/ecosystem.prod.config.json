@@ -2,11 +2,12 @@
   "apps": [
     {
       "name": "habits-prod",
-      "script": "dist/src/index.js",
+      "script": "build/src/index.js",
+      "cwd": "/home/ubuntu/habits-server/_work/habits-server/habits-server",
+      "node_args": "-r tsconfig-paths/register",
+      "exec_mode": "fork",
       "instances": 1,
-      "autorestart": true,
-      "watch": true,
-      "time": true,
+      "watch": false,
       "env": {
         "NODE_ENV": "production",
         "PORT": 8001
