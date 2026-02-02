@@ -1,13 +1,13 @@
 {
-  "name": "Node Js Starter Project With Typescript",
+  "name": "Habits Server",
   "version": "1.0.0",
-  "description": "Production-ready Node.js backend with TypeScript and MongoDB",
-  "main": "build/index.js",
+  "description": "Habits Server",
+  "main": "build/src/index.js",
   "scripts": {
     "lint": "eslint . --ext .ts",
     "build": "tsc",
     "dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only src/index.ts",
-    "start": "node -r tsconfig-paths/register build/index.js",
+    "start": "node -r tsconfig-paths/register build/src/index.js",
     "start:prod": "pm2 startOrRestart ./pm2/ecosystem.prod.config.json --only habits-prod"
   },
   "keywords": [],
