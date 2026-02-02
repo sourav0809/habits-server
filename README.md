@@ -1,4 +1,4 @@
-# Node.js TypeScript Starter Kit (MongoDB)
+# Habits_Server
 
 A production-ready Node.js backend with TypeScript, MongoDB (Mongoose), JWT auth, and a clear layered structure.
 
@@ -42,13 +42,13 @@ npm run dev
 
 ## Environment Variables
 
-| Variable       | Description                    |
-|----------------|--------------------------------|
-| PORT           | Server port (default 3000)     |
-| DATABASE_URL   | MongoDB connection string     |
-| JWT_SECRET     | Secret for signing JWTs       |
-| JWT_EXPIRES_IN | JWT expiry (e.g. 7d)          |
-| SERVER_ENV     | development \| test \| production |
+| Variable       | Description                      |
+| -------------- | -------------------------------- |
+| PORT           | Server port (default 3000)       |
+| DATABASE_URL   | MongoDB connection string        |
+| JWT_SECRET     | Secret for signing JWTs          |
+| JWT_EXPIRES_IN | JWT expiry (e.g. 7d)             |
+| SERVER_ENV     | development\| test \| production |
 
 ## Project Structure
 
@@ -69,4 +69,5 @@ src/
 ## License
 
 ISC
+
 # habits-server
