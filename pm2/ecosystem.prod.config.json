@@ -2,8 +2,11 @@
   "apps": [
     {
       "name": "habits-prod",
-      "script": "node",
-      "args": "-r tsconfig-paths/register build/src/index.js",
+      "script": "dist/src/index.js",
+      "instances": 1,
+      "autorestart": true,
+      "watch": true,
+      "time": true,
       "env": {
         "NODE_ENV": "production",
         "PORT": 8001

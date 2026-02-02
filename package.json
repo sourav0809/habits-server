@@ -5,10 +5,11 @@
   "main": "build/src/index.js",
   "scripts": {
     "lint": "eslint . --ext .ts",
-    "build": "tsc",
-    "dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only src/index.ts",
-    "start": "node -r tsconfig-paths/register build/src/index.js",
-    "start:prod": "pm2 startOrRestart ./pm2/ecosystem.prod.config.json --only habits-prod"
+    "build": "tsc && echo 'build successful'",
+    "start": "node dist/src/index.js",
+    "prod": "npm run build && npm run start",
+    "dev": "nodemon src/index.ts",
+    "start:prod": "pm2 startOrRestart ./pm2/ecosystem.prod.config.json"
   },
   "keywords": [],
   "author": "",
