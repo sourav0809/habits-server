@@ -1,0 +1,33 @@
+name: Habits Production
+
+on:
+  push:
+    branches: ["production"]
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, production]
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          clean: "false"
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start Server
+        run: npm run start:prod
