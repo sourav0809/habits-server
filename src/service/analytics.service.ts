@@ -1,16 +1,16 @@
-import moment from "moment-timezone";
 import type { IUserActivity } from "@/models";
 import userActivityService from "@/service/userActivity.service";
 import userGoalService from "@/service/userGoal.service";
 import foodConsumptionService from "@/service/foodConsumption.service";
 import waterConsumptionService from "@/service/waterConsumption.service";
-import { DEFAULT_TIMEZONE } from "@/utils/date";
+import { getStartDate } from "@/utils/date";
 import {
   getPeriodKey,
   getPeriodsBetween,
   normalizeUnit,
   parseRange,
 } from "@/utils/analytics";
+import { timeFormats, timeUnits } from "@/constant";
 
 export interface CaloriesProgressPoint {
   period: string;
@@ -230,7 +230,12 @@ class AnalyticsService {
 
   /**
    * Hydration insights for the date range: day streak, goals met, daily avg, best day.
-   * If user has a goal (targetWaterMl > 0), goalsMet and dayStreak are relative to that; otherwise goalsMet and dayStreak are 0.
+   *
+   * goalsMet:
+   *   Number of days in range where totalWaterMl >= targetWaterMl (only if goal exists)
+   *
+   * dayStreak:
+   *   Consecutive days from range end backwards where user logged ANY water (> 0 ml)
    */
   async getHydrationInsights(
     userId: string,
@@ -242,54 +247,86 @@ class AnalyticsService {
       userGoalService.findOneByUserId(userId),
     ]);
 
-    const targetWaterMl = goal && (goal.targetWaterMl ?? 0) > 0 ? goal.targetWaterMl! : 0;
+    const targetWaterMl =
+      goal && (goal.targetWaterMl ?? 0) > 0 ? goal.targetWaterMl! : 0;
+
+    /**
+     * Map of YYYY-MM-DD -> total water (ml)
+     */
     const byDay = new Map<string, number>();
     for (const a of activities as IUserActivity[]) {
-      const key = moment(a.date).tz(DEFAULT_TIMEZONE).format("YYYY-MM-DD");
-      byDay.set(key, a.totalWaterMl ?? 0);
+      const key = getStartDate(a.date).format(timeFormats.DATE_YMD);
+      const prev = byDay.get(key) ?? 0;
+      byDay.set(key, prev + (a.totalWaterMl ?? 0));
     }
 
+    /**
+     * Goals met (goal-based)
+     */
     let goalsMet = 0;
     if (targetWaterMl > 0) {
       for (const ml of byDay.values()) {
-        if (ml >= targetWaterMl) goalsMet += 1;
-      }
-    }
-
-    let dayStreak = 0;
-    if (targetWaterMl > 0) {
-      const endM = moment(end).tz(DEFAULT_TIMEZONE).startOf("day");
-      let current = endM.clone();
-      const startM = moment(start).tz(DEFAULT_TIMEZONE).startOf("day");
-      while (current.isSameOrAfter(startM)) {
-        const key = current.format("YYYY-MM-DD");
-        const ml = byDay.get(key) ?? 0;
         if (ml >= targetWaterMl) {
-          dayStreak += 1;
-          current.subtract(1, "day");
-        } else {
-          break;
+          goalsMet += 1;
         }
       }
     }
 
-    const totalWaterMl = Array.from(byDay.values()).reduce((s, v) => s + v, 0);
-    const daysInRange = moment(end).tz(DEFAULT_TIMEZONE).startOf("day")
-      .diff(moment(start).tz(DEFAULT_TIMEZONE).startOf("day"), "days") + 1;
-    const dailyAvgMl = daysInRange > 0 ? Math.round((totalWaterMl / daysInRange) * 100) / 100 : 0;
-    const dailyAvgL = Math.round((dailyAvgMl / 1000) * 100) / 100;
+    const startM = getStartDate(start);
+    const endM = getStartDate(end);
 
-    const bestDayMl = byDay.size > 0 ? Math.max(...byDay.values()) : 0;
-    const bestDayL = Math.round((bestDayMl / 1000) * 100) / 100;
+    /**
+     * Day streak (log-based, NOT goal-based)
+     * Any water logged (> 0 ml) counts
+     */
+    let dayStreak = 0;
+    let current = endM.clone();
+
+    while (current.isSameOrAfter(startM)) {
+      const key = current.format(timeFormats.DATE_YMD);
+      const ml = byDay.get(key) ?? 0;
+
+      if (ml > 0) {
+        dayStreak += 1;
+        current.subtract(1, timeUnits.DAY);
+      } else {
+        break;
+      }
+    }
+
+    /**
+     * Daily averages
+     */
+    const totalWaterMl = Array.from(byDay.values()).reduce((sum, v) => sum + v, 0);
+    const daysInRange = endM.diff(startM, timeUnits.DAYS) + 1;
+
+    const dailyAvgMl =
+      daysInRange > 0
+        ? Math.round((totalWaterMl / daysInRange) * 100) / 100
+        : 0;
+
+    const dailyAvgL =
+      Math.round((dailyAvgMl / 1000) * 100) / 100;
+
+    /**
+     * Best day
+     */
+    const bestDayMl =
+      byDay.size > 0 ? Math.max(...byDay.values()) : 0;
+
+    const bestDayL =
+      Math.round((bestDayMl / 1000) * 100) / 100;
 
     return {
-      dayStreak,
-      goalsMet,
+      dayStreak,          // log-based streak
+      goalsMet,           // goal-based metric
       dailyAvgMl,
       dailyAvgL,
       bestDayMl,
       bestDayL,
-      targetWaterMl: goal && (goal.targetWaterMl ?? 0) >= 0 ? goal.targetWaterMl! : null,
+      targetWaterMl: goal
+        ? goal.targetWaterMl ?? null
+        : null,
     };
   }
 

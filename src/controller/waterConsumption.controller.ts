@@ -20,13 +20,18 @@ const getWaterConsumptions = catchAsync(async (req: Request, res: Response) => {
   const user = (req as AuthenticatedRequest).user;
   const { startDate: startDateQuery, endDate: endDateQuery, page: pageQuery, limit: limitQuery } = req.query;
 
-  const today = getStartOfDayAsDate();
-  const start = startDateQuery ? getStartOfDayAsDate() : today;
-  const end = endDateQuery ? getEndOfDayAsDate() : getEndOfDayAsDate();
+
+  const start = startDateQuery
+    ? getStartOfDayAsDate(startDateQuery as string)
+    : getStartOfDayAsDate();
+
+  const end = endDateQuery
+    ? getEndOfDayAsDate(endDateQuery as string)
+    : getEndOfDayAsDate();
+
 
   const page = Math.max(1, parseInt(String(pageQuery || 1), 10));
   const limit = Math.min(100, Math.max(1, parseInt(String(limitQuery || 20), 10)));
-
   const { logs, totalEntries, totalWaterMl, averagePerLog } =
     await waterConsumptionService.getPaginatedWithSummary(user.id, start, end, page, limit);
 
