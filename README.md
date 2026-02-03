@@ -1,4 +1,4 @@
-# Habits – Your Habits Tracker
+# Habits – Track Calories. Build Better Habits.
 
 A full-stack habits and wellness tracker to log food, water, and daily goals. Track calories, hydration, set targets, and view analytics over time—all in one place.
 
