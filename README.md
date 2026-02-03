@@ -1,73 +1,70 @@
-# Habits Server Production
+# Habits – Your Habits Tracker
 
-A production-ready Node.js backend with TypeScript, MongoDB (Mongoose), JWT auth, and a clear layered structure.
+A full-stack habits and wellness tracker to log food, water, and daily goals. Track calories, hydration, set targets, and view analytics over time—all in one place.
 
-## Features
+---
 
-- **TypeScript** – Full TypeScript support
-- **Express.js** – Web framework
-- **MongoDB + Mongoose** – NoSQL database with schema validation and indexes
-- **Authentication** – JWT-based auth with bcrypt
-- **Security** – Helmet, CORS, compression
-- **Logging** – Winston
+## 1. Deployed Links
 
-## Prerequisites
+|                 | URL                                       |
+| --------------- | ----------------------------------------- |
+| **Frontend**    | https://habits.itssourav.online/dashboard |
+| **Backend API** | https://api-habit.itssourav.online/api    |
 
-- Node.js v20+
-- MongoDB (local or Atlas)
+### GitHub
 
-## Quick Start
+- **Frontend:** [habits-client](https://github.com/sourav0809/habits-client)
+- **Backend:** [habits-server](https://github.com/sourav0809/habits-server)
+
+---
+
+## 2. Tech Stack
+
+| Layer          | Technologies                                                  |
+| -------------- | ------------------------------------------------------------- |
+| **Frontend**   | React, Vite, TypeScript, Tailwind CSS, React Query, shadcn/ui |
+| **Backend**    | Express, TypeScript, MongoDB, Mongoose                        |
+| **Deployment** | Vercel (frontend), AWS EC2 (backend), GitHub CI/CD            |
+
+---
+
+## 3. Startup Instructions
+
+**Prerequisites:** Node.js v20+, MongoDB (local or Atlas)
 
 ```bash
+# Clone the repo
+git clone https://github.com/sourav0809/habits-server.git
+cd habits-server
+
 # Install dependencies
 npm install
 
-# Set up environment
+# Copy env from example and fill in your values
 cp example.env .env
-# Edit .env: set DATABASE_URL (e.g. mongodb://localhost:27017/habits)
+# Edit .env: set DATABASE_URL, JWT_SECRET, etc.
 
-# Start dev server
+# Run the development server
 npm run dev
 ```
 
-- Health: `http://localhost:3000/health`
-- Auth API: `http://localhost:3000/api/v1/auth` (POST /register, POST /login)
+- **Health check:** `http://localhost:3000/health`
+- **API base:** `http://localhost:3000/api/v1`
 
-## Scripts
+---
 
-- `npm run dev` – Dev server with hot reload
-- `npm run build` – Build for production
-- `npm start` – Run production build
-- `npm run lint` – Run ESLint
+## 4. Features
 
-## Environment Variables
+- **Auth** – Email/password register & login, Google OAuth, JWT
+- **User foods** – Create and manage custom foods with calories per gram
+- **Food consumption** – Log meals with quantity and date; paginated list and daily summary
+- **Water consumption** – Log water intake (ml); list, summary, and averages
+- **Goals** – Set daily targets for water (ml) and calories
+- **Today’s activity** – View today’s total calories and water
+- **Analytics** – Calories & water over time, progress by period, goal-achievement trend, hydration insights (streaks, goals met, best day)
 
-| Variable       | Description                      |
-| -------------- | -------------------------------- |
-| PORT           | Server port (default 3000)       |
-| DATABASE_URL   | MongoDB connection string        |
-| JWT_SECRET     | Secret for signing JWTs          |
-| JWT_EXPIRES_IN | JWT expiry (e.g. 7d)             |
-| SERVER_ENV     | development\| test \| production |
-
-## Project Structure
-
-```
-src/
-  config/       – env, logger, mongoose connection
-  constant/     – enums, messages
-  controller/   – HTTP handlers
-  middlewares/  – express middlewares
-  models/       – Mongoose schemas (User, etc.)
-  routes/       – route definitions
-  service/      – business logic
-  types/        – TypeScript types
-  utils/        – helpers, catchAsync, response, etc.
-  validations/  – Joi schemas
-```
+---
 
 ## License
 
 ISC
-
-# habits-server
