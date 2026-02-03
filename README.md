@@ -8,7 +8,7 @@ A full-stack habits and wellness tracker to log food, water, and daily goals. Tr
 
 |                 | URL                                       |
 | --------------- | ----------------------------------------- |
-| **Frontend**    | https://habits.itssourav.online/dashboard |
+| **Frontend**    | https://habits.itssourav.online |
 | **Backend API** | https://api-habit.itssourav.online/api    |
 
 ### GitHub
