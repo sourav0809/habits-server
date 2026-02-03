@@ -66,6 +66,51 @@ npm run dev
 
 ---
 
+## 5. Assessment Requirement Mapping
+
+This project fulfills the Frontend Assessment requirements in the following way:
+
+### Authentication
+
+- Email/password login & signup implemented using JWT
+- Protected routes with auth guards
+
+### Dashboard
+
+- Food tracking with calorie calculation
+- Water intake logging (daily)
+- Daily summary for calories and water
+- Visual charts for quick insight
+
+### Goals
+
+- User can set daily water and calorie goals
+- Progress shown visually on dashboard
+
+### UI/UX
+
+- Responsive design using Tailwind & shadcn/ui
+- Loading, error, and empty states handled
+- Clear visual hierarchy and feedback
+
+---
+
+## 6. Implementation Notes
+
+While the assessment required a minimal backend, additional endpoints were implemented to demonstrate real-world frontend data consumption and dashboard design.
+
+### Food Dataset Assumption
+
+- The system starts with no predefined foods by default
+- Users can create and manage their own food items
+- This was a deliberate choice to give users flexibility
+
+### Data Modeling Tradeoff
+
+Instead of a single `DailyLog` document per day, food and water entries are stored as separate collections (`food_consumptions`, `water_consumptions`) and aggregated on read. This improves flexibility for analytics and trends while still supporting daily summaries efficiently.
+
+---
+
 ## License
 
 ISC
