@@ -66,7 +66,7 @@ npm run dev
 
 ---
 
-## 5. Assessment Requirement Mapping
+## 5. Assessment Requirement
 
 This project fulfills the Frontend Assessment requirements in the following way:
 
