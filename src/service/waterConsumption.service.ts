@@ -95,6 +95,69 @@ class WaterConsumptionService {
       .exec();
     return logs;
   }
+
+  /**
+   * Get paginated water logs in date range plus summary for the whole range.
+   * Summary (totalEntries, totalWaterMl, averagePerLog) is for the entire date range, not just the page.
+   */
+  async getPaginatedWithSummary(
+    userId: string,
+    start: Date,
+    end: Date,
+    page: number,
+    limit: number
+  ): Promise<{
+    logs: IWaterConsumption[];
+    totalEntries: number;
+    totalWaterMl: number;
+    averagePerLog: number;
+  }> {
+    const match = {
+      userId: new mongoose.Types.ObjectId(userId),
+      dateAndTime: { $gte: start, $lte: end },
+      deletedAt: null,
+      isDeleted: false,
+    };
+
+    const skip = Math.max(0, (page - 1) * limit);
+    const limitNum = Math.min(Math.max(1, limit), 100);
+
+    const result = await WaterConsumptionModel.aggregate([
+      { $match: match },
+      {
+        $facet: {
+          summary: [
+            {
+              $group: {
+                _id: null,
+                totalEntries: { $sum: 1 },
+                totalWaterMl: { $sum: "$amountMl" },
+              },
+            },
+          ],
+          logs: [
+            { $sort: { createdAt: -1 } },
+            { $skip: skip },
+            { $limit: limitNum },
+          ],
+        },
+      },
+    ]).exec();
+
+    const summary = result[0]?.summary?.[0];
+    const totalEntries = summary?.totalEntries ?? 0;
+    const totalWaterMl = summary?.totalWaterMl ?? 0;
+    const averagePerLog = totalEntries > 0 ? Math.round((totalWaterMl / totalEntries) * 100) / 100 : 0;
+
+    const logs = (result[0]?.logs ?? []) as IWaterConsumption[];
+
+    return {
+      logs,
+      totalEntries,
+      totalWaterMl,
+      averagePerLog,
+    };
+  }
 }
 
 export default new WaterConsumptionService();

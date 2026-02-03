@@ -28,6 +28,11 @@ export const SUCCESS_MESSAGES = {
     UPDATE_SUCCESS: "Goal updated successfully",
   },
   USER_ACTIVITY: {
-    GET_TODAY_ACTIVITYS_SUCCESS: "Today activities fetched successfully",
+    GET_TODAY_ACTIVITIES_SUCCESS: "Today activities fetched successfully",
+  },
+  ANALYTICS: {
+    CALORIES_PROGRESS_SUCCESS: "Calories progress fetched successfully",
+    WATER_PROGRESS_SUCCESS: "Water progress fetched successfully",
+    GOAL_ACHIEVEMENT_TREND_SUCCESS: "Goal achievement trend fetched successfully",
   },
 };

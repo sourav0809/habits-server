@@ -16,7 +16,7 @@ const getTodaysActivity = catchAsync(async (req: Request, res: Response) => {
   };
 
   const activities = await userActivityService.getUserActivity(condition);
-  return response(res, httpStatus.OK, SUCCESS_MESSAGES.USER_ACTIVITY.GET_TODAY_ACTIVITYS_SUCCESS, {
+  return response(res, httpStatus.OK, SUCCESS_MESSAGES.USER_ACTIVITY.GET_TODAY_ACTIVITIES_SUCCESS, {
     activities,
   });
 });

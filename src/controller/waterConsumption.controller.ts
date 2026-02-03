@@ -12,26 +12,38 @@ import ApiError from "@/utils/apiError";
 import { getEndOfDayAsDate, getStartOfDayAsDate } from "@/utils/date";
 
 /**
- * Get all water intake logs for the authenticated user in a date range.
- * Query: startDate, endDate (optional; default today).
+ * Get paginated water intake logs for the authenticated user in a date range.
+ * Query: startDate, endDate (optional; default today), page (default 1), limit (default 20, max 100).
+ * Summary (totalEntries, totalWaterMl, averagePerLog) is for the entire date range; rows are paginated.
  */
 const getWaterConsumptions = catchAsync(async (req: Request, res: Response) => {
   const user = (req as AuthenticatedRequest).user;
-  const { startDate: startDateQuery, endDate: endDateQuery } = req.query;
+  const { startDate: startDateQuery, endDate: endDateQuery, page: pageQuery, limit: limitQuery } = req.query;
 
-  const today = getStartOfDayAsDate(new Date());
-  const start = startDateQuery ? getStartOfDayAsDate(new Date(startDateQuery as string)) : today;
-  const end = endDateQuery ? getEndOfDayAsDate(new Date(endDateQuery as string)) : getEndOfDayAsDate(new Date());
+  const today = getStartOfDayAsDate();
+  const start = startDateQuery ? getStartOfDayAsDate() : today;
+  const end = endDateQuery ? getEndOfDayAsDate() : getEndOfDayAsDate();
 
-  const condition = {
-    userId: user.id,
-    dateAndTime: { $gte: start, $lte: end },
-  };
+  const page = Math.max(1, parseInt(String(pageQuery || 1), 10));
+  const limit = Math.min(100, Math.max(1, parseInt(String(limitQuery || 20), 10)));
 
-  const logs = await waterConsumptionService.getAll(condition);
+  const { logs, totalEntries, totalWaterMl, averagePerLog } =
+    await waterConsumptionService.getPaginatedWithSummary(user.id, start, end, page, limit);
+
+  const totalPages = Math.ceil(totalEntries / limit);
 
   return response(res, httpStatus.OK, SUCCESS_MESSAGES.WATER_CONSUMPTION.LIST_SUCCESS, {
-    logs,
+    logs: logs,
+    pagination: {
+      page,
+      limit,
+      totalEntries,
+      totalPages,
+    },
+    summary: {
+      totalWaterMl,
+      averagePerLog,
+    },
   });
 });
 
@@ -57,10 +69,10 @@ const getWaterConsumption = catchAsync(async (req: Request, res: Response) => {
  */
 const addWaterConsumption = catchAsync(async (req: Request, res: Response) => {
   const user = (req as AuthenticatedRequest).user;
-  const { amount, dateAndTime: bodyDateAndTime } = req.body;
+  const { amount, dateAndTime } = req.body;
 
-  const day = bodyDateAndTime
-    ? getStartOfDayAsDate(bodyDateAndTime)
+  const day = dateAndTime
+    ? getStartOfDayAsDate(dateAndTime)
     : getStartOfDayAsDate();
 
   const session = await mongoose.startSession();
@@ -74,7 +86,7 @@ const addWaterConsumption = catchAsync(async (req: Request, res: Response) => {
         userId: user.id,
         userActivityId: activity._id.toString(),
         amountMl: amount,
-        dateAndTime: day,
+        dateAndTime: dateAndTime,
       },
       session
     );
@@ -108,14 +120,14 @@ const addWaterConsumption = catchAsync(async (req: Request, res: Response) => {
 const updateWaterConsumption = catchAsync(async (req: Request, res: Response) => {
   const user = (req as AuthenticatedRequest).user;
   const id = req.params.id as string;
-  const { amount: bodyAmount, dateAndTime: bodyDateAndTime } = req.body;
+  const { amount, dateAndTime } = req.body;
 
   const log = await waterConsumptionService.findOne({ _id: id, userId: user.id });
   if (!log) {
     throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.WATER_CONSUMPTION.NOT_FOUND);
   }
 
-  const effectiveAmount = bodyAmount ?? log.amountMl;
+  const effectiveAmount = amount ?? log.amountMl;
 
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -123,8 +135,8 @@ const updateWaterConsumption = catchAsync(async (req: Request, res: Response) =>
   try {
     const updatePayload: Record<string, unknown> = { amountMl: effectiveAmount };
 
-    if (bodyDateAndTime !== undefined) {
-      const newDay = getStartOfDayAsDate(new Date(bodyDateAndTime));
+    if (dateAndTime !== undefined) {
+      const newDay = getStartOfDayAsDate(dateAndTime);
       const oldDay = getStartOfDayAsDate(log.dateAndTime);
 
       if (newDay.getTime() !== oldDay.getTime()) {

@@ -7,22 +7,25 @@ const idParam = Joi.object().keys({
 });
 
 /**
- * Create water intake schema (body: amount required, dateAndTime optional; default today).
+ * Create water intake schema (body: amount and dateAndTime both required).
  */
 export const createWaterConsumptionSchema: JoiValidationSchema = {
   body: Joi.object().keys({
     amount: Joi.number().min(0).required(),
-    dateAndTime: Joi.alternatives().try(Joi.date(), Joi.string()).optional(),
+    dateAndTime: Joi.alternatives().try(Joi.date(), Joi.string()).required(),
   }),
 };
 
 /**
- * Get all water intake schema (query: startDate, endDate optional; default today).
+ * Get all water intake schema (query: startDate, endDate, page, limit).
+ * startDate/endDate optional (default today). page default 1, limit default 20, max 100.
  */
 export const getAllWaterConsumptionSchema: JoiValidationSchema = {
   query: Joi.object().keys({
-    startDate: Joi.string().optional(),
-    endDate: Joi.string().optional(),
+    startDate: Joi.alternatives().try(Joi.date(), Joi.string()).optional(),
+    endDate: Joi.alternatives().try(Joi.date(), Joi.string()).optional(),
+    page: Joi.number().integer().min(1).optional(),
+    limit: Joi.number().integer().min(1).max(100).optional(),
   }),
 };
 

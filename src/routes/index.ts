@@ -5,6 +5,7 @@ import userFoodConsumptionRoutes from "./foodConsumption.routes";
 import waterConsumptionRoutes from "./waterConsumption.routes";
 import userGoalRoutes from "./userGoal.routes";
 import userActivityRoutes from "./userActivity.routes";
+import userAnalyticsRoutes from "./userAnalytics.routes";
 
 const router = express.Router();
 
@@ -14,6 +15,6 @@ router.use("/user/food/consumption", userFoodConsumptionRoutes);
 router.use("/user/water/consumption", waterConsumptionRoutes);
 router.use("/user/goals", userGoalRoutes);
 router.use("/user/activities", userActivityRoutes);
-// router.use("/user/analytics", userAnalyticsRoutes);
+router.use("/user/analytics", userAnalyticsRoutes);
 
 export default router;    
