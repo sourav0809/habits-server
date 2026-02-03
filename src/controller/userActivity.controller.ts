@@ -10,12 +10,14 @@ import { SUCCESS_MESSAGES } from "@/constant";
 const getTodaysActivity = catchAsync(async (req: Request, res: Response) => {
   const user = (req as AuthenticatedRequest).user;
 
+
   const condition = {
     userId: user.id,
-    createdAt: { $gte: getStartOfDayAsDate(), $lte: getEndOfDayAsDate() },
+    date: { $gte: getStartOfDayAsDate(), $lte: getEndOfDayAsDate() },
   };
 
   const activities = await userActivityService.getUserActivity(condition);
+
   return response(res, httpStatus.OK, SUCCESS_MESSAGES.USER_ACTIVITY.GET_TODAY_ACTIVITIES_SUCCESS, {
     activities,
   });
