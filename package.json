@@ -12,7 +12,8 @@
     "start": "node dist/src/index.js",
     "prod": "npm run build && npm run start",
     "dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only src/index.ts",
-    "start:prod": "pm2 startOrRestart ./pm2/ecosystem.prod.config.json"
+    "start:prod": "pm2 startOrRestart ./pm2/ecosystem.prod.config.json",
+    "seed": "ts-node -r tsconfig-paths/register src/scripts/seed.ts"
   },
   "keywords": [],
   "author": "",
