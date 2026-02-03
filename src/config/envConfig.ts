@@ -13,9 +13,10 @@ const requiredForEnv = (schema: Joi.Schema<any>): Joi.Schema =>
 
 const envVarsSchema = Joi.object()
   .keys({
-    // auth 
+    // auth
     BCRYPT_SALT_ROUNDS: Joi.string().optional(),
     MASTER_PASSWORD: Joi.string().required(),
+    GOOGLE_CLIENT_ID: Joi.string().optional(), // Required for Google OAuth (POST /auth/google)
 
     // database
     DATABASE_URL: requiredForEnv(Joi.string().required()),
@@ -47,7 +48,11 @@ export const envConfig = {
   server: {
     env: envVars.SERVER_ENV,
     port: envVars.PORT
-  }
+  },
+  google: {
+    clientId: envVars.GOOGLE_AUTH_CLIENT_ID,
+    clientSecret: envVars.GOOGLE_AUTH_CLIENT_SECRET,
+  },
 };
 
 export default envConfig;

@@ -3,6 +3,7 @@ export const SUCCESS_MESSAGES = {
     LOGIN_SUCCESSFUL: "Login successful",
     REGISTER_SUCCESS: "Register successful",
     GET_CURRENT_USER_SUCCESS: "Current user fetched successfully",
+    GOOGLE_LOGIN_SUCCESS: "Signed in with Google successfully",
   },
   FOOD: {
     LIST_SUCCESS: "Foods fetched successfully",

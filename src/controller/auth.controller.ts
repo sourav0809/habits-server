@@ -1,12 +1,14 @@
 /**
  * Authentication Controller
- * Handles user authentication related operations including login and password management
+ * Handles user authentication: login, register, Google OAuth, and current user.
  */
 
 import bcrypt from 'bcrypt';
+import { OAuth2Client } from 'google-auth-library';
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import catchAsync from '../utils/catchAsync';
 import { response } from '../utils/response';
 import { LoginRequest, RegisterRequest } from '@/types';
@@ -99,9 +101,69 @@ const getCurrentUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+/**
+ * Sign in or register with Google.
+ * Expects body.idToken from Google Sign-In (e.g. Google One Tap or signInWithCredential).
+ * Verifies the token, then finds or creates user by email and returns JWT + user.
+ */
+const googleAuth = catchAsync(async (req: Request, res: Response) => {
+  const { idToken } = req.body as { idToken: string };
+  const clientId = envConfig.google?.clientId;
+
+  if (!clientId) {
+    return response(
+      res,
+      httpStatus.SERVICE_UNAVAILABLE,
+      ERROR_MESSAGES.AUTH.GOOGLE_OAUTH_NOT_CONFIGURED
+    );
+  }
+
+  const client = new OAuth2Client(clientId);
+  let payload: { email?: string; name?: string };
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: clientId,
+    });
+    payload = ticket.getPayload() ?? {};
+  } catch {
+    return response(res, httpStatus.BAD_REQUEST, ERROR_MESSAGES.AUTH.INVALID_GOOGLE_TOKEN);
+  }
+
+  const email = payload.email?.trim().toLowerCase();
+  const name = payload.name?.trim() || payload.email?.split('@')[0] || "";
+
+  if (!email) {
+    return response(res, httpStatus.BAD_REQUEST, ERROR_MESSAGES.AUTH.INVALID_GOOGLE_TOKEN);
+  }
+
+  let user = await userService.findOneByCondition({ email });
+
+  if (!user) {
+    const randomPassword = crypto.randomBytes(32).toString('hex');
+    const hashedPassword = await encryptPassword(randomPassword);
+    user = await userService.create({ email, name, password: hashedPassword });
+  }
+
+  const token = jwt.sign(
+    {
+      email: user.email,
+      userId: user._id.toString(),
+    },
+    envConfig.security.secretKey,
+    { expiresIn: '240000h' }
+  );
+
+  return response(res, httpStatus.OK, SUCCESS_MESSAGES.AUTH.GOOGLE_LOGIN_SUCCESS, {
+    token,
+    user,
+  });
+});
 
 export default {
   login,
   register,
-  getCurrentUser
+  getCurrentUser,
+  googleAuth,
 };

@@ -20,3 +20,15 @@ export const loginSchema: JoiValidationSchema = {
     password: Joi.string().required(),
   }),
 };
+
+/**
+ * Google OAuth schema.
+ * Frontend sends the Google ID token from the Google Sign-In response.
+ */
+export const googleAuthSchema: JoiValidationSchema = {
+  body: Joi.object().keys({
+    idToken: Joi.string().required().messages({
+      "string.empty": "Google ID token is required",
+    }),
+  }),
+};

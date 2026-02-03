@@ -4,6 +4,8 @@ const ERROR_MESSAGES = {
     INVALID_CREDENTIALS: "Invalid credentials",
     USER_NOT_FOUND: "User not found",
     USER_ALREADY_EXISTS: "User already exists",
+    GOOGLE_OAUTH_NOT_CONFIGURED: "Google sign-in is not configured",
+    INVALID_GOOGLE_TOKEN: "Invalid or expired Google sign-in token",
   },
   FOOD: {
     CREATE_FAILED: "Failed to add food",
