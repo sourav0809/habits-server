@@ -139,6 +139,62 @@ class FoodConsumptionService {
 
     return consumptions;
   }
+
+  /**
+   * Get paginated food consumptions in date range (no summary).
+   */
+  async getPaginatedWithSummary(
+    userId: string,
+    start: Date,
+    end: Date,
+    page: number,
+    limit: number
+  ): Promise<{
+    consumptions: IFoodConsumption[];
+    totalEntries: number;
+  }> {
+    const match = {
+      userId: new mongoose.Types.ObjectId(userId),
+      dateAndTime: { $gte: start, $lte: end },
+      deletedAt: null,
+      isDeleted: false,
+    };
+
+    const skip = Math.max(0, (page - 1) * limit);
+    const limitNum = Math.min(Math.max(1, limit), 100);
+
+    const result = await FoodConsumptionModel.aggregate([
+      { $match: match },
+      {
+        $facet: {
+          summary: [{ $count: "totalEntries" }],
+          consumptions: [
+            { $sort: { createdAt: -1 } },
+            { $skip: skip },
+            { $limit: limitNum },
+            {
+              $lookup: {
+                from: "user_foods",
+                localField: "userFoodId",
+                foreignField: "_id",
+                as: "userFoodId",
+                pipeline: [{ $project: { name: 1, caloriesPerGram: 1, defaultQuantity: 1 } }],
+              },
+            },
+            { $unwind: { path: "$userFoodId", preserveNullAndEmptyArrays: true } },
+          ],
+        },
+      },
+    ]).exec();
+
+    const totalEntries = result[0]?.summary?.[0]?.totalEntries ?? 0;
+    const consumptions = (result[0]?.consumptions ?? []) as IFoodConsumption[];
+
+    return {
+      consumptions,
+      totalEntries,
+    };
+  }
 }
 
 export default new FoodConsumptionService();

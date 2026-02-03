@@ -38,6 +38,22 @@ export function parseRange(range: string): { start: Date; end: Date } {
 }
 
 /**
+ * Resolve date range from query: use startDate + endDate if both provided, else use range string (default "1m").
+ */
+export function getDateRangeFromQuery(query: {
+  startDate?: string;
+  endDate?: string;
+  range?: string;
+}): { start: Date; end: Date } {
+  if (query.startDate != null && query.endDate != null) {
+    const start = getStartOfDayAsDate(new Date(query.startDate));
+    const end = getEndOfDayAsDate(new Date(query.endDate));
+    return { start, end };
+  }
+  return parseRange(query.range ?? "1m");
+}
+
+/**
  * Normalize unit string to UnitValue (day | month | year). Default "day" for unknown.
  */
 export function normalizeUnit(unit: string): UnitValue {

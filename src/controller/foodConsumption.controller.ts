@@ -16,27 +16,43 @@ import { getEndOfDayAsDate, getStartOfDayAsDate } from "@/utils/date";
 console.log("[foodConsumption.controller] loaded");
 
 /**
- * Get all food consumptions for the authenticated user in a date range.
- * Query: startDate, endDate (optional; default to today).
+ * Get paginated food consumptions for the authenticated user in a date range.
+ * Query: startDate, endDate (optional; default today), page (default 1), limit (default 20, max 100).
  */
 const getFoodConsumptions = catchAsync(async (req: Request, res: Response) => {
   const user = (req as AuthenticatedRequest).user;
-  const { startDate: startDateQuery, endDate: endDateQuery } = req.query;
-
+  const { startDate: startDateQuery, endDate: endDateQuery, page: pageQuery, limit: limitQuery } = req.query;
 
   const today = getStartOfDayAsDate();
   const start = startDateQuery ? getStartOfDayAsDate(startDateQuery as string) : today;
   const end = endDateQuery ? getEndOfDayAsDate(endDateQuery as string) : getEndOfDayAsDate();
+  const page = Math.max(1, parseInt(String(pageQuery || 1), 10));
+  const limit = Math.min(100, Math.max(1, parseInt(String(limitQuery || 20), 10)));
 
-  const condition = {
-    userId: user.id,
-    dateAndTime: { $gte: start, $lte: end },
-  };
+  const { consumptions, totalEntries } =
+    await foodConsumptionService.getPaginatedWithSummary(user.id, start, end, page, limit);
 
-  const consumptions = await foodConsumptionService.getAll(condition);
+  const totalPages = Math.ceil(totalEntries / limit);
+
+  const consumptionsWithId = consumptions.map((doc) => {
+    const d = doc as unknown as Record<string, unknown>;
+    const { _id, ...rest } = d;
+    return {
+      ...rest,
+      id: (typeof _id === "object" && _id !== null && "toString" in _id
+        ? (_id as { toString: () => string }).toString()
+        : _id) ?? undefined,
+    };
+  });
 
   return response(res, httpStatus.OK, SUCCESS_MESSAGES.FOOD_CONSUMPTION.LIST_SUCCESS, {
-    consumptions,
+    consumptions: consumptionsWithId,
+    pagination: {
+      page,
+      limit,
+      totalEntries,
+      totalPages,
+    },
   });
 });
 

@@ -3,7 +3,10 @@ import express from "express";
 import analyticsController from "@/controller/analytics.controller";
 import authMiddleware from "@/middlewares/auth.middleware";
 import validate from "@/utils/validate";
-import { analyticsQuerySchema } from "@/validations/analytics.validation";
+import {
+  analyticsQuerySchema,
+  caloriesOverTimeQuerySchema,
+} from "@/validations/analytics.validation";
 
 const router = express.Router();
 
@@ -26,6 +29,20 @@ router.get(
   authMiddleware,
   validate(analyticsQuerySchema),
   analyticsController.getGoalAchievementTrend
+);
+
+router.get(
+  "/hydration-insights",
+  authMiddleware,
+  validate(analyticsQuerySchema),
+  analyticsController.getHydrationInsights
+);
+
+router.get(
+  "/calories-over-time",
+  authMiddleware,
+  validate(caloriesOverTimeQuerySchema),
+  analyticsController.getCaloriesOverTime
 );
 
 export default router;

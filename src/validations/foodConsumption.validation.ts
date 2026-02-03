@@ -18,12 +18,15 @@ export const createFoodConsumptionSchema: JoiValidationSchema = {
 };
 
 /**
- * Get all food consumptions schema (query: startDate, endDate optional, default today)
+ * Get all food consumptions schema (query: startDate, endDate optional; page, limit for pagination).
+ * startDate/endDate default to today. page default 1, limit default 20, max 100.
  */
 export const getAllFoodConsumptionSchema: JoiValidationSchema = {
   query: Joi.object().keys({
-    startDate: Joi.date().optional(),
-    endDate: Joi.date().optional(),
+    startDate: Joi.alternatives().try(Joi.date(), Joi.string()).optional(),
+    endDate: Joi.alternatives().try(Joi.date(), Joi.string()).optional(),
+    page: Joi.number().integer().min(1).optional(),
+    limit: Joi.number().integer().min(1).max(100).optional(),
   }),
 };
 
