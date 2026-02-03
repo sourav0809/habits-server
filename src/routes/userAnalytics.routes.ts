@@ -45,4 +45,11 @@ router.get(
   analyticsController.getCaloriesOverTime
 );
 
+router.get(
+  "/water-over-time",
+  authMiddleware,
+  validate(caloriesOverTimeQuerySchema),
+  analyticsController.getWaterOverTime
+);
+
 export default router;

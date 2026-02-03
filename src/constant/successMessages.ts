@@ -36,5 +36,6 @@ export const SUCCESS_MESSAGES = {
     GOAL_ACHIEVEMENT_TREND_SUCCESS: "Goal achievement trend fetched successfully",
     HYDRATION_INSIGHTS_SUCCESS: "Hydration insights fetched successfully",
     CALORIES_OVER_TIME_SUCCESS: "Calories over time fetched successfully",
+    WATER_OVER_TIME_SUCCESS: "Water over time fetched successfully",
   },
 };

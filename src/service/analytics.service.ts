@@ -3,6 +3,7 @@ import type { IUserActivity } from "@/models";
 import userActivityService from "@/service/userActivity.service";
 import userGoalService from "@/service/userGoal.service";
 import foodConsumptionService from "@/service/foodConsumption.service";
+import waterConsumptionService from "@/service/waterConsumption.service";
 import { DEFAULT_TIMEZONE } from "@/utils/date";
 import {
   getPeriodKey,
@@ -52,6 +53,18 @@ export interface CaloriesOverTimeResult {
   calories: number;
   mealsLogged: number;
   avgCaloriesPerMeal: number;
+}
+
+export interface WaterOverTimePoint {
+  period: string;
+  waterMl: number;
+}
+
+export interface WaterOverTimeResult {
+  waterOverTime: WaterOverTimePoint[];
+  totalWaterMl: number;
+  logsLogged: number;
+  avgWaterPerLog: number;
 }
 
 /**
@@ -325,6 +338,54 @@ class AnalyticsService {
       calories: Math.round(totalCalories * 100) / 100,
       mealsLogged,
       avgCaloriesPerMeal,
+    };
+  }
+
+  /**
+   * Water over time: chart data (water ml per period) plus total water, logs logged, avg water per log.
+   * Uses user_activities for chart and total; water_consumptions for logs count.
+   */
+  async getWaterOverTime(
+    userId: string,
+    start: Date,
+    end: Date,
+    unit: string
+  ): Promise<WaterOverTimeResult> {
+    const [activities, logs] = await Promise.all([
+      userActivityService.getByDateRange(userId, start, end),
+      waterConsumptionService.getAll({
+        userId,
+        dateAndTime: { $gte: start, $lte: end },
+      }),
+    ]);
+
+    const periodKeys = getPeriodsBetween(start, end, unit);
+    const byPeriod = new Map<string, number>();
+    for (const key of periodKeys) byPeriod.set(key, 0);
+
+    let totalWaterMl = 0;
+    for (const a of activities as IUserActivity[]) {
+      const key = getPeriodKey(a.date, unit);
+      const ml = a.totalWaterMl ?? 0;
+      totalWaterMl += ml;
+      const cur = byPeriod.get(key);
+      if (cur !== undefined) byPeriod.set(key, cur + ml);
+    }
+
+    const waterOverTime: WaterOverTimePoint[] = periodKeys.map((period) => ({
+      period,
+      waterMl: byPeriod.get(period) ?? 0,
+    }));
+
+    const logsLogged = logs.length;
+    const avgWaterPerLog =
+      logsLogged > 0 ? Math.round((totalWaterMl / logsLogged) * 100) / 100 : 0;
+
+    return {
+      waterOverTime,
+      totalWaterMl: Math.round(totalWaterMl * 100) / 100,
+      logsLogged,
+      avgWaterPerLog,
     };
   }
 }

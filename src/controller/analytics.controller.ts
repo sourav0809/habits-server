@@ -81,10 +81,26 @@ const getCaloriesOverTime = catchAsync(async (req: Request, res: Response) => {
   return response(res, httpStatus.OK, SUCCESS_MESSAGES.ANALYTICS.CALORIES_OVER_TIME_SUCCESS, result);
 });
 
+/**
+ * GET /user/analytics/water-over-time
+ * Query: EITHER startDate+endDate OR range (with optional unit). Not both.
+ * Returns water over time (chart), total water ml, logs logged, avg water per log.
+ */
+const getWaterOverTime = catchAsync(async (req: Request, res: Response) => {
+  const user = (req as AuthenticatedRequest).user;
+  const query = req.query as { startDate?: string; endDate?: string; range?: string; unit?: string };
+  const { start, end } = getDateRangeFromQuery(query);
+  const unit = query.unit ?? "day";
+
+  const result = await analyticsService.getWaterOverTime(user.id, start, end, unit);
+  return response(res, httpStatus.OK, SUCCESS_MESSAGES.ANALYTICS.WATER_OVER_TIME_SUCCESS, result);
+});
+
 export default {
   getCaloriesProgress,
   getWaterProgress,
   getGoalAchievementTrend,
   getHydrationInsights,
   getCaloriesOverTime,
+  getWaterOverTime,
 };
