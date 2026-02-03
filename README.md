@@ -6,10 +6,11 @@ A full-stack habits and wellness tracker to log food, water, and daily goals. Tr
 
 ## 1. Deployed Links
 
-|                 | URL                                       |
-| --------------- | ----------------------------------------- |
-| **Frontend**    | https://habits.itssourav.online |
-| **Backend API** | https://api-habit.itssourav.online/api    |
+|                 | URL                                                                                                             |
+| --------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Frontend**    | https://habits.itssourav.online                                                                                 |
+| **Backend API** | https://api-habit.itssourav.online/api                                                                          |
+| **Demo**        | [Watch demo (Google Drive)](https://drive.google.com/file/d/1BjDh4y4BlDRMaq9ne2pgAlpMsM2pfWYQ/view?usp=sharing) |
 
 ### GitHub
 
