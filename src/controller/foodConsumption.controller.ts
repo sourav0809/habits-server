@@ -116,7 +116,7 @@ const addFoodConsumption = catchAsync(async (req: Request, res: Response) => {
         userId: activity.userId.toString(),
         userActivityId: activity._id.toString(),
         userFoodId,
-        dateAndTime: day, // store start of day (project TZ) so query by date range returns this entry
+        dateAndTime: dateAndTime,
         quantity,
         totalCalories,
       },
